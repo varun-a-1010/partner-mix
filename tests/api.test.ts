@@ -7,6 +7,7 @@ import type { WorkspaceView } from '../shared/model';
 import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
 import type { Qloo } from '../server/qloo';
+import { legacyWorkspace } from './legacy-fixture';
 
 const cleanups: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
@@ -23,10 +24,15 @@ async function setup(qloo?: Qloo) {
     method: 'POST',
     url: '/api/workspaces',
     headers,
-    payload: { demo: true },
+    payload: { demo: false },
   });
-  const w = created.json<WorkspaceView>();
+  const original = (await store.get(created.json<WorkspaceView>().id))!;
+  const fixture = legacyWorkspace().workspace;
+  await store.create({ ...fixture, id: original.id, ownerHash: original.ownerHash });
   const cookie = created.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+  const w = (
+    await app.inject({ url: `/api/w/${original.id}`, headers: { ...headers, cookie } })
+  ).json<WorkspaceView>();
   return { app, store, w, headers: { ...headers, cookie }, dir, created };
 }
 describe('private campaign API', () => {

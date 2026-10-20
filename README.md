@@ -15,12 +15,14 @@ npm run dev
 ```
 
 Open [Partner Mix](http://127.0.0.1:5193). The API uses port 3193. Use **Explore the
-sample campaign** for a complete fictional example; **Plan a campaign** starts an
-empty real workspace.
+Qloo sample** for a campaign with real artists, podcasts and Qloo rankings;
+**Plan a campaign** starts an empty workspace. An open campaign also has an
+**Open Qloo sample** button in its sidebar.
 
 `QLOO_API_KEY` is read only by the API process. Supply it through this app's runtime
 environment, normally its own Doppler project. No credential is bundled into the
-client. Without a key, sample planning and manual offers still work.
+client. New samples require a connection. Without a key, empty campaigns and
+manual offers still work, and saved samples remain readable.
 
 Campaigns are stored as private files under ignored `.data/`. An HttpOnly cookie
 grants access to each campaign in this browser. The recent-campaign list contains
@@ -29,26 +31,31 @@ Export a decision brief when you need a portable record.
 
 ## Try the repair flow
 
-1. Open the sample and choose **A bridge between both**.
-2. In **Partners & offers**, keep Trail Notes in every mix.
-3. Change Low Tide Assembly's cost from ₹230,000 to ₹400,000.
+1. Open the Qloo sample and choose a mix.
+2. In **Partners & offers**, keep one of its partners in every mix.
+3. Mark the other selected partner unavailable.
 4. Return to **Compare mixes** and choose an updated option.
 5. Open **Decision brief** to see the retained/replaced partners and cost change.
 
-All sample partners, quotes, ranks and availability are fictional. Real Qloo
-discovery never supplies prices or confirms commercial availability.
+The sample resolves Patagonia and Daft Punk as audience references, discovers
+up to eight real partners, and compares that shortlist through Qloo. Its campaign,
+cost estimates and activation ideas are illustrative. Availability starts
+unconfirmed. Qloo discovery never supplies prices or confirms commercial availability.
+Older fictional samples remain labelled and offer a button to open a new real one.
 
 ## Checks
 
 ```sh
 npm run check
 npm run test:qloo
+npm run test:qloo:sample
 ```
 
 The first command runs formatting, unit/API tests, type checking and the
-production build. The opt-in live check needs `QLOO_API_KEY`, makes at most ten
-upstream calls, uses synthetic commercial inputs, and removes its temporary
-workspace. It prints only sanitized evidence.
+production build. Both opt-in live checks need `QLOO_API_KEY`, make at most ten
+upstream calls each, use synthetic commercial inputs, and remove their temporary
+workspace. They print only sanitized evidence. The sample check exercises the
+same sample-creation API used by the UI.
 
 This MVP uses a deterministic portfolio solver and bounded Qloo workflow. It does
 not yet include an LLM planning agent, contract negotiation, outreach delivery,

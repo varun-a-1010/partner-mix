@@ -1,15 +1,20 @@
 import { randomUUID } from 'node:crypto';
 import type { Comparison, StoredWorkspace } from '../shared/model';
-import { emptyOffer } from '../shared/model';
+import { emptyOffer, isLegacySample } from '../shared/model';
 import { AppError } from './store';
 import type { Qloo } from './qloo';
 import { evidenceFingerprint } from './solver';
 
-export async function runComparison(w: StoredWorkspace, qloo: Qloo, discover: boolean) {
-  if (w.demo)
+export async function runComparison(
+  w: StoredWorkspace,
+  qloo: Qloo,
+  discover: boolean,
+  options: { discoveryPerGroup?: 2 | 6 } = {},
+) {
+  if (isLegacySample(w))
     throw new AppError(
       400,
-      'Start a real campaign to use Qloo. Sample rankings stay illustrative.',
+      'This older sample has fictional entities. Open a new Qloo sample to use real partners.',
     );
   if (w.brief.segments.some((s) => !s.seeds.length))
     throw new AppError(422, 'Add at least one confirmed taste reference for each group.');
@@ -33,7 +38,7 @@ export async function runComparison(w: StoredWorkspace, qloo: Qloo, discover: bo
         })),
       );
       for (const { kind, insight } of results) {
-        for (const { entity } of insight.results) {
+        for (const { entity } of insight.results.slice(0, options.discoveryPerGroup ?? 6)) {
           if (next.candidates.some((c) => c.entityId === entity.entityId)) continue;
           if (next.candidates.length >= 24) break;
           next.candidates.push({

@@ -10,7 +10,9 @@ or any submitted artifact as part of this app.
   dedicated app storage setup; do not borrow another app's database.
 - Qloo only establishes cultural associations. Never imply verified reach, actual
   audience overlap, ROI, willingness to partner, prices, availability or endorsement.
-- Sample partners, offers and rankings are fictional and must stay visibly labelled.
+- New samples use real Qloo entities and rankings. Sample costs/activation ideas are
+  illustrative, availability is unconfirmed. Older fictional samples stay labelled
+  and cannot send their fabricated IDs to Qloo.
 - Secrets stay server-side and out of source control. Production credentials belong
   in this app's Doppler project.
 - This MVP uses a deterministic portfolio solver and bounded Qloo workflow, not an

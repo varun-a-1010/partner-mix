@@ -17,7 +17,12 @@ entity resolution, artist/podcast discovery, comparison of the same shortlist,
 cache reuse, API persistence, selection, locked-partner repair and Markdown
 export. It uses synthetic commercial data and cleans its temporary workspace.
 
-On 2026-10-20: all 27 domain/API/provider tests passed. Formatting, TypeScript
+`npm run test:qloo:sample` runs the same bounded verification through the actual
+sample-creation route, checking real provider identities/ranks, illustrative
+estimates, unknown availability, refresh, selection, repair and export. Unit/API
+tests also cover incomplete results and failure without partial persistence.
+
+On 2026-10-20: all 33 domain/API/provider tests passed. Formatting, TypeScript
 and the production build passed.
 
 ## Live Qloo check

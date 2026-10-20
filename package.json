@@ -12,6 +12,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "test:qloo": "tsx scripts/test-qloo-live.ts",
+    "test:qloo:sample": "tsx scripts/test-qloo-live.ts --sample",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm test && npm run build"

@@ -107,6 +107,7 @@ export type Workspace = {
   createdAt: string;
   updatedAt: string;
   demo: boolean;
+  sample?: { source: 'qloo'; generatedAt: string };
   brief: Brief;
   candidates: Candidate[];
   evidence?: Evidence;
@@ -120,6 +121,11 @@ export type WorkspaceView = Workspace & {
   selectionStale: boolean;
   provider: 'configured' | 'not-connected';
 };
+export const isLegacySample = (w: Workspace) => w.demo && w.sample?.source !== 'qloo';
+export const sampleDescription = (w: Workspace) =>
+  isLegacySample(w)
+    ? 'Fictional sample campaign. Partners, offers and rankings are illustrative.'
+    : 'Real artists, podcasts and cultural rankings from Qloo. The campaign, costs and activation ideas are illustrative; availability is unconfirmed.';
 export const emptyOffer = (): Offer => ({
   amount: null,
   basis: 'estimate',

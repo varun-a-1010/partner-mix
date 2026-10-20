@@ -60,6 +60,12 @@ Qloo requests happen outside the storage queue. At most one comparison per
 workspace runs at a time. Save only after the original version is rechecked.
 Failure or a concurrent edit discards the whole pending result.
 
+Sample creation resolves its references and builds the entire Qloo shortlist
+before saving a workspace or issuing its capability cookie. It records
+`sample.source: qloo` and a generation timestamp, with real provider evidence
+and explicitly illustrative commercial inputs. Legacy samples remain unchanged;
+their missing marker identifies fictional data that cannot enter live queries.
+
 A chosen decision snapshots its brief, partners, evidence and package. Later
 changes set `selectionStale` through an input fingerprint. Reselecting preserves
 the immediately previous snapshot and a before/after receipt.

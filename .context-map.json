@@ -10,8 +10,13 @@
     },
     {
       "path": "server/data.ts",
-      "role": "Campaign creation and explicitly fictional sample",
-      "depends_on": ["shared/model.ts", "server/solver.ts"]
+      "role": "Empty campaign creation and access capabilities",
+      "depends_on": ["shared/model.ts"]
+    },
+    {
+      "path": "server/sample.ts",
+      "role": "Real Qloo sample with explicitly illustrative commercial inputs",
+      "depends_on": ["shared/model.ts", "server/qloo.ts", "server/workflow.ts"]
     },
     {
       "path": "server/store.ts",
@@ -36,7 +41,13 @@
     {
       "path": "server/app.ts",
       "role": "Authenticated API, origin guard and optimistic concurrency",
-      "depends_on": ["server/store.ts", "server/qloo.ts", "server/workflow.ts", "server/solver.ts"]
+      "depends_on": [
+        "server/store.ts",
+        "server/qloo.ts",
+        "server/workflow.ts",
+        "server/solver.ts",
+        "server/sample.ts"
+      ]
     },
     {
       "path": "src/App.tsx",

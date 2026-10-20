@@ -12,7 +12,9 @@ not a promise that those partners are willing to participate.
 
 ## Implemented flow
 
-1. Create a real campaign or open an explicitly fictional sample.
+1. Create an empty campaign or open a sample that discovers real Qloo partners
+   from Patagonia and Daft Punk references. Sample costs and activation ideas
+   are illustrative; availability starts unconfirmed.
 2. Set the brand, objective, budget, currency, reserve, dates, partner count (2 or 3)
    and whether the package must contain both formats.
 3. Define core and adjacent audience hypotheses with up to four confirmed Qloo

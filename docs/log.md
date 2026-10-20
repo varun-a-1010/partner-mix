@@ -2,6 +2,12 @@
 
 ## 2026-10-20
 
+- Replaced new fictional samples with live Qloo discovery and comparison from
+  Patagonia/Daft Punk references. Sample costs and activation ideas remain
+  illustrative, and availability starts unknown. Existing samples are preserved
+  and labelled, with an entry point to create a real Qloo sample.
+- Added sample creation, incomplete evidence, failure atomicity, offline access
+  and refresh/export tests, plus a bounded opt-in live sample check.
 - Verified implementation `8d09568` with 27 passing tests, formatting, types and
   production build. Ten real Qloo requests succeeded; complete 24-partner
   comparisons, cache reuse, locked-partner repair and decision export passed.

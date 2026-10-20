@@ -27,8 +27,21 @@ contributing seed IDs actually returned by Qloo. Query IDs are local provenance
 identifiers, not vendor request IDs. Missing contributor metadata is labelled
 unavailable; no explanation is invented.
 
-The sample uses synthetic IDs and source `sample`. Its IDs are blocked from live
-search/comparison workflows. Users start a separate real campaign for live data.
+New samples resolve the known Patagonia brand and Daft Punk artist IDs through
+search, then run discovery and comparison. Each group contributes its first two
+artists and podcasts to a deduplicated shortlist of up to eight. Four comparisons
+rank that same shortlist. Creation uses at most ten calls, including the two
+searches, before cache reuse. No identities or rankings are fabricated.
+
+Sample commercial estimates and activation concepts are explicitly illustrative;
+availability is unknown. Samples can refresh comparisons and edit real references.
+If Qloo is unavailable, creation fails without a saved partial workspace or a
+fictional fallback. Existing saved samples remain accessible.
+
+Legacy samples without `sample.source: qloo` retain their fictional data and
+labels. Their synthetic IDs are still blocked from live search/comparison and
+relinking. The interface offers a separate new Qloo sample without overwriting
+the saved campaign.
 
 Qloo does not provide quoted rates, willingness, current availability, commercial
 exclusivity, contract rights, true audience overlap or measured campaign results.

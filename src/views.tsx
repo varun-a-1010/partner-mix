@@ -1,6 +1,6 @@
 import { Check, Download, LockKeyhole, RefreshCw } from 'lucide-react';
 import type { Candidate, WorkspaceView } from '../shared/model';
-import { money } from '../shared/model';
+import { isLegacySample, money } from '../shared/model';
 import { PartnerIcon, type Mutate } from './forms';
 
 function nameOf(w: WorkspaceView, id: string) {
@@ -16,7 +16,7 @@ export function EvidencePanel({ w }: { w: WorkspaceView }) {
       <summary>
         Inspect the cultural evidence{' '}
         <span>
-          {w.demo
+          {isLegacySample(w)
             ? 'Illustrative rankings'
             : w.planning.evidenceStatus === 'current'
               ? 'Qloo comparisons'
@@ -132,7 +132,7 @@ export function ComparisonBoard({
   openBrief: () => void;
 }) {
   const limit = Math.floor((w.brief.budget * (100 - w.brief.reservePercent)) / 100);
-  const stateText = w.demo
+  const stateText = isLegacySample(w)
     ? 'Illustrative cultural comparison'
     : w.planning.evidenceStatus === 'current'
       ? 'Current Qloo comparison'
@@ -150,7 +150,7 @@ export function ComparisonBoard({
         </div>
         <button
           className="secondary"
-          disabled={w.demo || w.provider !== 'configured'}
+          disabled={isLegacySample(w) || w.provider !== 'configured'}
           onClick={compare}
         >
           <RefreshCw size={16} /> Refresh Qloo comparison
@@ -269,7 +269,7 @@ export function ComparisonBoard({
               </div>
               <div className="package-cost">
                 <div>
-                  <span>Total partner costs</span>
+                  <span>{w.demo ? 'Illustrative partner costs' : 'Total partner costs'}</span>
                   <strong>{money(p.total, w.brief.currency)}</strong>
                 </div>
                 <div className="budget-track">
@@ -396,7 +396,7 @@ export function Decision({
         <div className="decision-amount">
           <span>{p.title}</span>
           <strong>{money(p.total, brief.currency)}</strong>
-          <small>Entered partner costs</small>
+          <small>{w.demo ? 'Illustrative partner costs' : 'Entered partner costs'}</small>
         </div>
         <h4>The chosen partners</h4>
         {selection.partners.map((c: Candidate) => (

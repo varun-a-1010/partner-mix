@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Search, X, LockKeyhole, UnlockKeyhole, Music2, Mic2, Plus, Trash2 } from 'lucide-react';
 import type { Brief, Candidate, Entity, Offer, SeedKind, WorkspaceView } from '../shared/model';
-import { money } from '../shared/model';
+import { isLegacySample, money } from '../shared/model';
 import { api } from './api';
 
 export type Mutate = (
@@ -42,10 +42,10 @@ export function EntityFinder({
       setLoading(false);
     }
   }
-  if (w.demo)
+  if (isLegacySample(w))
     return (
       <p className="hint">
-        This example uses fictional taste references. Start a new campaign for live Qloo search.
+        This older example uses fictional references. Open a new Qloo sample for real partners.
       </p>
     );
   if (w.provider !== 'configured')
@@ -503,7 +503,7 @@ export function Roster({
           <button
             className="primary"
             onClick={discover}
-            disabled={w.demo || w.provider !== 'configured'}
+            disabled={isLegacySample(w) || w.provider !== 'configured'}
           >
             Discover with Qloo
           </button>
@@ -626,7 +626,7 @@ export function Roster({
                   <Trash2 size={15} />
                 </button>
               </div>
-              {!w.demo && (
+              {!isLegacySample(w) && (
                 <details className="link-partner">
                   <summary>
                     {c.entityId ? 'Review or change Qloo link' : 'Link this partner in Qloo'}

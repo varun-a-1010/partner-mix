@@ -7,7 +7,7 @@ import type {
   Planning,
   Workspace,
 } from '../shared/model';
-import { money, strategyNames } from '../shared/model';
+import { money, sampleDescription, strategyNames } from '../shared/model';
 
 const digest = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 export function evidenceFingerprint(w: Workspace) {
@@ -98,7 +98,7 @@ function makePackage(partners: Candidate[], w: Workspace, qs: Comparison[]): Pac
       : []),
   ]);
   if (!w.brief.start) unresolved.push('Choose campaign dates and reconfirm every partner.');
-  if (w.demo) unresolved.unshift('This is a fictional example; none of these offers is real.');
+  if (w.demo) unresolved.unshift(sampleDescription(w));
   const rationale = coverage.map((c) => {
     const name = partners.find((p) => p.id === c.candidateId)!.name;
     return `${name} contributes the strongest relative evidence in this mix for ${c.name}: #${c.rank} of ${c.of} ${c.kind === 'artist' ? 'artists' : 'podcasts'} compared.`;
@@ -238,7 +238,7 @@ export function exportBrief(w: Workspace): string {
     '',
     `${w.brief.brand} · Partner Mix`,
     '',
-    w.demo ? '**Fictional sample campaign. Partners, offers and rankings are illustrative.**' : '',
+    w.demo ? `**${sampleDescription(w)}**` : '',
     `Goal: ${w.brief.goal}`,
     `Dates: ${w.brief.start || 'Not set'} to ${w.brief.end || 'Not set'}`,
     `Budget: ${money(w.brief.budget, w.brief.currency)}; ${w.brief.reservePercent}% reserved.`,

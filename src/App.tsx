@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AudioLines, Layers3, ListChecks, FileText, NotebookPen, Plus, X } from 'lucide-react';
 import type { WorkspaceView } from '../shared/model';
-import { money } from '../shared/model';
+import { isLegacySample, money, sampleDescription } from '../shared/model';
 import { api, ApiError } from './api';
 import { BriefEditor, Roster } from './forms';
 import { ComparisonBoard, Decision } from './views';
@@ -62,7 +62,7 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   async function create(demo: boolean) {
-    setBusy('Creating campaign…');
+    setBusy(demo ? 'Finding real artists and podcasts with Qloo…' : 'Creating campaign…');
     setError('');
     setNotice('');
     try {
@@ -168,7 +168,7 @@ export function App() {
                 Plan a campaign
               </button>
               <button className="text-button" disabled={!!busy} onClick={() => void create(true)}>
-                Explore the sample campaign
+                Explore the Qloo sample
               </button>
             </div>
             {busy && <p role="status">{busy}</p>}
@@ -189,14 +189,14 @@ export function App() {
               </section>
             )}
             <p className="hint">
-              Campaign access stays in this browser. Sample partners, quotes and rankings are
-              fictional.
+              Campaign access stays in this browser. The sample uses real Qloo partners and rankings
+              with illustrative commercial inputs.
             </p>
           </section>
-          <section className="welcome-board" aria-label="Illustrative campaign mix">
+          <section className="welcome-board" aria-label="Sample campaign taste references">
             <div className="board-top">
               <span>Fieldwork / launch campaign</span>
-              <span>Sample</span>
+              <span>Qloo sample</span>
             </div>
             <h2>
               A familiar voice.
@@ -212,16 +212,16 @@ export function App() {
               </span>
             </div>
             <div className="example-slot">
-              <span className="example-type">Podcast</span>
-              <strong>Trail Notes</strong>
-              <span>Anchor the outdoor story</span>
+              <span className="example-type">Core</span>
+              <strong>Patagonia</strong>
+              <span>A reference for the outdoor audience</span>
             </div>
             <div className="example-slot music">
-              <span className="example-type">Artist</span>
-              <strong>Low Tide Assembly</strong>
-              <span>Open a door into music</span>
+              <span className="example-type">Adjacent</span>
+              <strong>Daft Punk</strong>
+              <span>A reference for the music audience</span>
             </div>
-            <p>Illustration only. No actual offers or audience claims.</p>
+            <p>Qloo finds real partners from these references when you open the sample.</p>
           </section>
         </main>
       </div>
@@ -261,6 +261,9 @@ export function App() {
           <button className="sidebar-new" disabled={!!busy} onClick={() => void create(false)}>
             <Plus size={16} /> New campaign
           </button>
+          <button className="sidebar-new" disabled={!!busy} onClick={() => void create(true)}>
+            <AudioLines size={16} /> Open Qloo sample
+          </button>
           <button
             className="sidebar-new"
             disabled={!!busy}
@@ -287,8 +290,13 @@ export function App() {
         </header>
         {w.demo && (
           <div className="sample-banner">
-            <strong>Fictional sample</strong>
-            <span>Every partner, quote and cultural rank in this campaign is illustrative.</span>
+            <strong>{isLegacySample(w) ? 'Older fictional sample' : 'Real Qloo sample'}</strong>
+            <span>{sampleDescription(w)}</span>
+            {isLegacySample(w) && (
+              <button disabled={!!busy} className="text-button" onClick={() => void create(true)}>
+                Open real Qloo sample
+              </button>
+            )}
             <button disabled={!!busy} className="text-button" onClick={() => void create(false)}>
               Start your own
             </button>

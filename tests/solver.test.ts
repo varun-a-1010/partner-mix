@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { randomUUID } from 'node:crypto';
-import { newWorkspace } from '../server/data';
+import { legacyWorkspace } from './legacy-fixture';
 import {
   evidenceFingerprint,
   exportBrief,
@@ -10,7 +10,7 @@ import {
 } from '../server/solver';
 import { emptyOffer } from '../shared/model';
 
-const demo = () => newWorkspace(true).workspace;
+const demo = () => legacyWorkspace().workspace;
 describe('campaign portfolio decisions', () => {
   it('combines complementary partners instead of simply taking both core favorites', () => {
     const w = demo(),

@@ -5,12 +5,19 @@ import staticFiles from '@fastify/static';
 import { randomUUID } from 'node:crypto';
 import { z, ZodError } from 'zod';
 import { briefSchema, entitySchema, offerSchema, versionSchema } from '../shared/validation';
-import { emptyOffer, seedKinds, type StoredWorkspace, type WorkspaceView } from '../shared/model';
+import {
+  emptyOffer,
+  isLegacySample,
+  seedKinds,
+  type StoredWorkspace,
+  type WorkspaceView,
+} from '../shared/model';
 import { hash, newWorkspace, sameHash } from './data';
 import { AppError, FileStore } from './store';
 import { createQloo, type Qloo } from './qloo';
 import { exportBrief, inputFingerprint, solve } from './solver';
 import { runComparison } from './workflow';
+import { populateQlooSample } from './sample';
 
 const idOf = (r: FastifyRequest) => (r.params as { id: string }).id;
 const cookieName = (id: string) => `pm_${id.replaceAll('-', '')}`;
@@ -90,7 +97,8 @@ export async function buildApp(
     async (r, reply) => {
       const { demo } = z.object({ demo: z.boolean().default(false) }).parse(r.body);
       const { workspace, secret } = newWorkspace(demo);
-      await store.create(workspace);
+      const ready = demo ? await populateQlooSample(workspace, qloo) : workspace;
+      await store.create(ready);
       reply.setCookie(cookieName(workspace.id), secret, {
         httpOnly: true,
         sameSite: 'strict',
@@ -98,7 +106,7 @@ export async function buildApp(
         path: '/api',
         maxAge: 60 * 60 * 24 * 90,
       });
-      return reply.code(201).send(view(workspace));
+      return reply.code(201).send(view(ready));
     },
   );
   app.get('/api/w/:id', async (r) => view(await owner(r)));
@@ -120,7 +128,8 @@ export async function buildApp(
     { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } },
     async (r) => {
       const w = await owner(r);
-      if (w.demo) throw new AppError(400, 'Start a real campaign to use live entity search.');
+      if (isLegacySample(w))
+        throw new AppError(400, 'Open a new Qloo sample to search real entities.');
       const { query, kind } = z
         .object({ query: z.string().trim().min(2).max(160), kind: z.enum(seedKinds) })
         .parse(r.body);
@@ -170,7 +179,8 @@ export async function buildApp(
       if (input.locked !== undefined) c.locked = input.locked;
       if (input.excluded !== undefined) c.excluded = input.excluded;
       if (input.entity) {
-        if (w.demo) throw new AppError(400, 'Sample entities cannot be relinked to live partners.');
+        if (isLegacySample(w))
+          throw new AppError(400, 'Open a new Qloo sample to link real partners.');
         if (input.entity.kind !== c.kind)
           throw new AppError(400, 'Partner type does not match the entity.');
         if (
