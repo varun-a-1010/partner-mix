@@ -21,8 +21,33 @@ exact reference matches or blocking questions stop the check for review.
 The expanded suite has 42 tests covering source retrieval/citation rejection,
 truncated output, safe URL validation, approval gates, strategy invalidation,
 strategic exclusions, failures without partial persistence, and concurrent research.
-A standalone real Vertex probe successfully read Allbirds' three official pages.
-The full brand-first live check is pending; the receipts below verify older flows.
+The full brand-first live check below also passed. Historical receipts remain
+labelled by their implementation SHA.
+
+## Live brand-first flow
+
+[Sanitized full-flow evidence](evidence/brand-flow-live-2026-10-20.json) is bound to
+`cac0e04e26150ed804f464265b0a5d86322d203c`. On 2026-10-20, Gemini 3.8 Flash
+successfully read all three supplied Allbirds pages and generated the brand report
+in 18.8 seconds. After explicit identity confirmation and strategy approval, all
+12 Qloo requests returned HTTP 200. The eight discovered partners were real provider
+entities, with complete coverage in all four shortlist comparisons.
+
+The creative assessment completed in 14.6 seconds. It marked Armchair Expert and
+Terrible, Thanks For Asking as poor editorial fits and held Father John Misty;
+those candidates did not enter proposed mixes. These judgments are generated
+creative hypotheses, not verified facts about commercial suitability.
+
+The initial mix was St. Paul & The Broken Bones + the memory palace. After locking
+the musician and marking the podcast unavailable in the test, the revised mix kept
+St. Paul & The Broken Bones and substituted Radiolab. Snapshot preservation and
+authenticated Markdown export passed; an unauthenticated export returned 404.
+All costs and availability edits were synthetic. The temporary workspace was
+removed; no existing user campaign was changed.
+
+Formatting, all 42 tests, TypeScript and the production build passed before the
+live check. The local Vite-proxied health endpoint subsequently reported both
+Qloo and the analyst configured. No browser or visual QA was performed.
 
 ## Historical live Qloo checks
 

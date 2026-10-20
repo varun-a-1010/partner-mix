@@ -2,6 +2,12 @@
 
 ## 2026-10-20
 
+- Verified the complete brand-first flow on `cac0e04`: both Gemini generations
+  succeeded, three official Allbirds pages were retrieved, all 12 Qloo calls
+  returned HTTP 200, and eight real partners received strategic assessments.
+  Selection, locked-partner repair and authenticated export passed. All 42 tests,
+  formatting, types and production build passed. Recorded sanitized evidence.
+
 - Fixed Vertex HTTP 400 rejection of the nested assessment schema by simplifying
   the generation schema while retaining strict output validation. A live isolated
   assessment then succeeded. Restricted the analyst to creative/editorial fit;

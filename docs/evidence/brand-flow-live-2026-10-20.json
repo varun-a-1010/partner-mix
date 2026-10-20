@@ -1,0 +1,491 @@
+{
+  "at": "2026-10-20T15:05:24.608Z",
+  "sourceSha": "cac0e04e26150ed804f464265b0a5d86322d203c",
+  "flow": "Allbirds hypothetical sample: website \u2192 reviewed strategy \u2192 Qloo \u2192 partner assessment \u2192 mix \u2192 repair \u2192 export",
+  "qlooCalls": [
+    {
+      "path": "/search",
+      "kind": "urn:entity:brand",
+      "status": 200,
+      "ms": 998
+    },
+    {
+      "path": "/search",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 283
+    },
+    {
+      "path": "/search",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 323
+    },
+    {
+      "path": "/search",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 236
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 1036
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 3501
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 596
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 3467
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 276
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 284
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 255
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 302
+    }
+  ],
+  "model": "gemini-3.8-flash",
+  "modelGenerations": 2,
+  "diagnostics": [
+    {
+      "stage": "research",
+      "outcome": "complete",
+      "elapsedMs": 18805,
+      "finishReason": "STOP"
+    },
+    {
+      "stage": "assessment",
+      "outcome": "complete",
+      "elapsedMs": 14608,
+      "finishReason": "STOP"
+    }
+  ],
+  "research": {
+    "sources": [
+      {
+        "url": "https://www.allbirds.com/pages/materials-making",
+        "retrievedAt": "2026-10-20T15:05:00.555Z"
+      },
+      {
+        "url": "https://www.allbirds.com/",
+        "retrievedAt": "2026-10-20T15:05:00.555Z"
+      },
+      {
+        "url": "https://www.allbirds.com/pages/our-story",
+        "retrievedAt": "2026-10-20T15:05:00.555Z"
+      }
+    ],
+    "analysis": {
+      "brandName": "Allbirds",
+      "summary": "Allbirds is a footwear and apparel company built on natural and alternative materials such as wool, tree fiber, and sugarcane, positioning its products around everyday comfort and lower environmental impact. This proposal evaluates an independent hypothetical campaign brief\u2014not an active brand campaign\u2014aimed at driving qualified traffic from adult NYC commuters and design-focused shoppers to an everyday walking shoe collection landing page through music and podcast activations.",
+      "facts": [
+        {
+          "topic": "Products",
+          "statement": "The brand designs and sells men's and women's footwear\u2014including slip-ons, sneakers, runners, and cruisers\u2014as well as socks and apparel, incorporating natural and alternative materials like merino wool, tree fiber, and sugarcane.",
+          "basis": "website",
+          "sources": [
+            "https://www.allbirds.com/",
+            "https://www.allbirds.com/pages/our-story",
+            "https://www.allbirds.com/pages/materials-making"
+          ]
+        },
+        {
+          "topic": "Positioning",
+          "statement": "The brand positions its footwear around lightweight, everyday comfort and replacing petroleum-based synthetics with renewable, naturally derived alternatives.",
+          "basis": "website",
+          "sources": [
+            "https://www.allbirds.com/",
+            "https://www.allbirds.com/pages/our-story",
+            "https://www.allbirds.com/pages/materials-making"
+          ]
+        },
+        {
+          "topic": "Price point",
+          "statement": "Core footwear styles shown on the website retail between $75 and $105, with socks priced between $14 and $18.",
+          "basis": "website",
+          "sources": [
+            "https://www.allbirds.com/"
+          ]
+        },
+        {
+          "topic": "Values and voice",
+          "statement": "The brand operates as a certified B Corp focusing on measurable carbon footprint reductions, transparent manufacturing partnerships, and minimalist design.",
+          "basis": "website",
+          "sources": [
+            "https://www.allbirds.com/pages/our-story",
+            "https://www.allbirds.com/pages/materials-making"
+          ]
+        },
+        {
+          "topic": "Existing audience",
+          "statement": "The exact demographic breakdown and geographic profile of Allbirds' current customer base are not publicly disclosed on the cited brand pages.",
+          "basis": "unknown",
+          "sources": []
+        },
+        {
+          "topic": "Target audience",
+          "statement": "The proposed campaign targets adult city commuters and design-conscious shoppers in New York City seeking comfortable everyday walking shoes.",
+          "basis": "campaign brief",
+          "sources": [
+            "campaign brief"
+          ]
+        },
+        {
+          "topic": "Market",
+          "statement": "The brand competes in the lifestyle sneaker and everyday footwear segment, emphasizing sustainable sourcing and casual comfort over formal wear.",
+          "basis": "hypothesis",
+          "sources": [
+            "https://www.allbirds.com/pages/our-story"
+          ]
+        }
+      ],
+      "objective": "Drive qualified visits to an Allbirds everyday-shoe collection landing page featuring individual product links from adult NYC commuters and design-conscious shoppers during November 2026.",
+      "successMeasure": "Volume of tagged visits reaching the everyday-shoe collection landing page who view a product and remain on the website for at least 30 seconds, delivered within the $25,000 budget (accounting for a 10% reserve).",
+      "guardrails": [
+        "Do not make unsupported claims of environmental superiority; adhere strictly to verifiable material statements (e.g., merino wool, tree fiber, sugarcane).",
+        "Avoid generic celebrity-style product placements; ground all executions in functional urban walking narratives and commutes.",
+        "Operate within the total $25,000 pilot budget, retaining a 10% reserve ($2,500) until partner pricing and production costs are confirmed.",
+        "Do not extrapolate or assume unverified demographic breakdowns, commercial terms, licensing rates, or talent availability prior to discovery outreach."
+      ],
+      "questions": [
+        {
+          "question": "What is the specific URL structure and tracking setup (e.g., UTM taxonomy or pixel event) established for the everyday collection landing page to verify the 30-second dwell time and product view threshold?",
+          "why": "Accurate technical attribution is necessary to measure the stated qualified visit KPI without relying on rough estimates.",
+          "blocking": false
+        },
+        {
+          "question": "What commercial licensing rights and usage windows are required for partner-recorded audio assets or walking story episodes beyond the November 2026 pilot flight?",
+          "why": "Audio partner compensation and production feasibility will hinge significantly on paid distribution and perpetual versus flight-only archival rights.",
+          "blocking": false
+        },
+        {
+          "question": "Are there existing Allbirds brick-and-mortar retail locations in NYC planned for integration, or is the destination purely direct-to-consumer digital conversion?",
+          "why": "Knowing whether retail foot traffic is supported will influence whether local walking routes lead to stores or stay strictly online.",
+          "blocking": false
+        },
+        {
+          "question": "What are the standard partner legal review parameters for vetting factual environmental claims about Allbirds' materials in third-party host-read copy?",
+          "why": "Compliance guardrails strictly prohibit unsubstantiated ecological claims, requiring pre-approved brand copy or strict clearance guidelines.",
+          "blocking": false
+        }
+      ],
+      "directions": [
+        {
+          "id": "core",
+          "title": "Urban Commuter Soundtracks & Walking Cadence",
+          "audience": "NYC transit commuters and daily city walkers seeking comfortable, supportive footwear for brisk daily travel across urban terrain.",
+          "rationale": "Aligning everyday walking shoes with dynamic, rhythmic walking audio reaches commuters during their active commute routines, connecting movement and shoe comfort directly to the collection page.",
+          "activation": "Commission an independent music artist to curate or compose an original 'City Stride' commute track, released alongside bespoke host audio storytelling and social links pointing NYC walkers to the everyday footwear catalog.",
+          "references": [
+            {
+              "query": "Allbirds",
+              "kind": "brand",
+              "reason": "Direct reference to anchor the brand's own everyday aesthetic, minimalist styling, and natural material profile in discovery queries."
+            },
+            {
+              "query": "Leon Bridges",
+              "kind": "artist",
+              "reason": "Represents warm, grounded, design-forward contemporary music well-suited to walking cadence and thoughtful daily routines."
+            }
+          ]
+        },
+        {
+          "id": "adjacent",
+          "title": "Design, Architecture & Thoughtful City Exploration",
+          "audience": "Aesthetically driven urbanites and design-conscious professionals who appreciate intentional industrial design, material innovation, and urban culture.",
+          "rationale": "Focusing on material craft and intentional living captures design-focused shoppers who prioritize clean aesthetic form and material integrity over traditional athletic branding.",
+          "activation": "Sponsor a dedicated walking segment or hosted audio deep-dive with an urban design podcast, discussing city navigation, everyday material choices, and directing listeners to explore Allbirds' alternative-material collection.",
+          "references": [
+            {
+              "query": "99% Invisible",
+              "kind": "podcast",
+              "reason": "Focuses on everyday design, architecture, and unseen urban elements, mirroring the brief's focus on design-conscious commuters and alternative materials."
+            },
+            {
+              "query": "Song Exploder",
+              "kind": "podcast",
+              "reason": "Explores the craft and deconstruction of creative pieces layer by layer, paralleling the craft-focused, deconstructed approach to sustainable footwear design."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "references": [
+    {
+      "direction": "core",
+      "name": "Urban Commuter Soundtracks & Walking Cadence",
+      "entities": [
+        {
+          "name": "Allbirds",
+          "kind": "brand",
+          "entityId": "78A44C09-E691-42DA-A553-5CDE6EE9B18A"
+        },
+        {
+          "name": "Leon Bridges",
+          "kind": "artist",
+          "entityId": "96B907F3-9F2C-4E6E-BCCF-9C9F0173E162"
+        }
+      ]
+    },
+    {
+      "direction": "adjacent",
+      "name": "Design, Architecture & Thoughtful City Exploration",
+      "entities": [
+        {
+          "name": "99% Invisible",
+          "kind": "podcast",
+          "entityId": "1B466B0E-323A-4EFD-A314-8737F58F1E1B"
+        },
+        {
+          "name": "Song Exploder",
+          "kind": "podcast",
+          "entityId": "D95B20A8-0CEA-4BDC-8074-60A303FA1980"
+        }
+      ]
+    }
+  ],
+  "partners": [
+    {
+      "name": "St. Paul & The Broken Bones",
+      "kind": "artist",
+      "entityId": "AFDEDBC3-D20A-41D3-8E2A-D3C4AC041604",
+      "assessment": {
+        "candidateId": "a542b302-4821-43fe-ae10-d22409e34e42",
+        "disposition": "investigate",
+        "role": "Soundtrack collaborator for dynamic urban walking",
+        "rationale": "Their dynamic blend of modern and classic soul could provide an energetic rhythmic backdrop for NYC commuter walking narratives.",
+        "activation": "Commission or curate an upbeat walking playlist track paired with artist audio commentary on city navigation.",
+        "concerns": [
+          "High-energy soul instrumentation might feel too intense for casual commuter cadence.",
+          "May lack direct thematic connection to minimalist product design or alternative materials."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/our-story"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    },
+    {
+      "name": "Allen Stone",
+      "kind": "artist",
+      "entityId": "88E94F16-1309-47DE-93EB-DC69A5E3F782",
+      "assessment": {
+        "candidateId": "cc4f0a9c-5546-40e8-9cce-81ff82bd5a88",
+        "disposition": "investigate",
+        "role": "Music collaborator for urban commuter playlists",
+        "rationale": "His soulful, introspective songwriting could align naturally with thoughtful daily city strolls and mindful commuting.",
+        "activation": "Feature an acoustic walking track alongside short-form audio reflections on everyday movement.",
+        "concerns": [
+          "Lyrical focus on romance and introspection might distract from urban walking utility.",
+          "Musical tone could skew overly mellow rather than motivating for daily commuter strides."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/our-story"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    },
+    {
+      "name": "Armchair Expert with Dax Shepard",
+      "kind": "podcast",
+      "entityId": "CA300E91-9CE3-4F75-8837-7DF8B0B2F631",
+      "assessment": {
+        "candidateId": "f5adfa63-5424-4e25-9f52-4f7cccefcbdc",
+        "disposition": "poor-fit",
+        "role": "Long-form conversational interview host",
+        "rationale": "The focus on celebrity interviews and broad human messiness directly conflicts with the brief's requirement to avoid generic celebrity promotion.",
+        "activation": "A mid-roll conversational discussion about daily routines and everyday walking footwear.",
+        "concerns": [
+          "Celebrity-centric format risks generic endorsement contrary to brief instructions.",
+          "Studio interview style does not lend itself naturally to city-walking narratives or material craft storytelling."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/materials-making"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    },
+    {
+      "name": "Terrible, Thanks For Asking",
+      "kind": "podcast",
+      "entityId": "A2EF43F8-6D2D-4DED-AABE-7673E9E8647B",
+      "assessment": {
+        "candidateId": "49871b17-6555-44ae-be2f-47d30a42a5d1",
+        "disposition": "poor-fit",
+        "role": "Personal narrative podcast host",
+        "rationale": "The show's focus on candid emotional struggles and grief presents a stark tonal mismatch for a campaign centered on everyday walking comfort.",
+        "activation": "A host-read segment discussing personal daily walks as a tool for grounding and mindfulness.",
+        "concerns": [
+          "Somber editorial subject matter risks clashing with everyday footwear product messaging.",
+          "Show tone does not naturally accommodate design-conscious or commuter-focused product discussions."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/our-story"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    },
+    {
+      "name": "Father John Misty",
+      "kind": "artist",
+      "entityId": "13CDFAD4-D5BC-4417-AB83-AC7DD856AD2C",
+      "assessment": {
+        "candidateId": "7ebfb4e1-8f09-4ed7-a46b-308283ddd5e5",
+        "disposition": "hold",
+        "role": "Soundtrack contributor for design-conscious city strolls",
+        "rationale": "His literate, baroque-pop arrangements could appeal to design-conscious urbanites, but his signature cynical tone poses editorial risks.",
+        "activation": "Curate an introspective walking track paired with audio liner notes on observing urban environments.",
+        "concerns": [
+          "Satirical and theatrical lyrical style could undermine sincere messaging about alternative materials and everyday comfort.",
+          "Persona may conflict with the brand's earnest, minimalist voice."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/materials-making"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    },
+    {
+      "name": "Dirty Projectors",
+      "kind": "artist",
+      "entityId": "5C64B1AB-583D-4324-9F70-B97214143010",
+      "assessment": {
+        "candidateId": "52e34713-fc5b-40ea-bea9-ee5b7d7baa22",
+        "disposition": "investigate",
+        "role": "Experimental soundtrack partner for design-led walking",
+        "rationale": "Their experimental arrangements and focus on intricate craft could parallel the campaign's focus on alternative materials and thoughtful design.",
+        "activation": "Compose a bespoke walking cadence track incorporating urban acoustic textures and alternative instrumentation.",
+        "concerns": [
+          "Avant-garde song structures might feel jarring or inaccessible to mainstream daily commuters.",
+          "Unconventional rhythms may not offer an easy, predictable tempo for walking."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/materials-making"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    },
+    {
+      "name": "the memory palace",
+      "kind": "podcast",
+      "entityId": "87EAEE3F-8F2D-4478-AB1A-E803F7BF69D0",
+      "assessment": {
+        "candidateId": "8114d606-1974-44d8-b8b5-808168c251bf",
+        "disposition": "investigate",
+        "role": "Immersive storytelling partner for urban walking",
+        "rationale": "The narrative focus on intriguing history could provide an engaging listening experience well-suited for pedestrian exploration.",
+        "activation": "Produce a bespoke walking narrative exploring the historical materials and paths of urban environments.",
+        "concerns": [
+          "Historical curiosities might distract from modern footwear design and daily commute context.",
+          "Monthly release cadence offers limited natural touchpoints within a single pilot flight."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/our-story"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    },
+    {
+      "name": "Radiolab",
+      "kind": "podcast",
+      "entityId": "B4D6B6FD-7146-4E1C-AE48-B8EBD2BB71DA",
+      "assessment": {
+        "candidateId": "64e4a5e1-9fca-43fa-bc6e-34bcab2d4613",
+        "disposition": "investigate",
+        "role": "Investigative audio partner for material innovation",
+        "rationale": "The show's emphasis on scientific exploration and innovative sound design offers strong creative alignment with alternative material craft.",
+        "activation": "Sponsor an exploration of natural material science or everyday physical movement tied to walking stories.",
+        "concerns": [
+          "Deep philosophical and scientific focus might overshadow simple everyday shoe utility.",
+          "Complex investigative framing could make driving rapid landing page click-through challenging."
+        ],
+        "sourceUrls": [
+          "https://www.allbirds.com/pages/materials-making"
+        ],
+        "researchId": "2db8a200-2094-4691-ad6d-2aa36d37c3f4",
+        "assessedAt": "2026-10-20T15:05:24.586Z"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "direction": "core",
+      "kind": "artist",
+      "returned": 4,
+      "requested": 4
+    },
+    {
+      "direction": "core",
+      "kind": "podcast",
+      "returned": 4,
+      "requested": 4
+    },
+    {
+      "direction": "adjacent",
+      "kind": "artist",
+      "returned": 4,
+      "requested": 4
+    },
+    {
+      "direction": "adjacent",
+      "kind": "podcast",
+      "returned": 4,
+      "requested": 4
+    }
+  ],
+  "firstMix": [
+    "St. Paul & The Broken Bones",
+    "the memory palace"
+  ],
+  "repair": {
+    "kept": "St. Paul & The Broken Bones",
+    "removed": "the memory palace",
+    "newMix": [
+      "St. Paul & The Broken Bones",
+      "Radiolab"
+    ]
+  },
+  "privateApiAndExportChecked": true,
+  "commercialInputs": "Campaign, prices, deliverables and availability edits are hypothetical. No relationship with Allbirds or the partners, real offer, demographic or campaign result is claimed.",
+  "cleanup": "Temporary workspace removed; existing user campaigns untouched."
+}
