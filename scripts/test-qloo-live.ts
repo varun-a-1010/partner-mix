@@ -2,9 +2,14 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createQloo } from '../server/qloo';
-import { createBrandAnalyst, type AnalystDiagnostic } from '../server/brand-analyst';
+import {
+  createBrandAnalyst,
+  type AnalystDiagnostic,
+  type BrandAnalyst,
+} from '../server/brand-analyst';
 import { allbirdsIntake } from '../server/sample';
 import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
@@ -37,7 +42,7 @@ const qloo = createQloo({
   },
 });
 const diagnostics: AnalystDiagnostic[] = [];
-const analyst = createBrandAnalyst({
+const provider = createBrandAnalyst({
   project: process.env.VERTEX_LLM_PROJECT_ID,
   serviceAccount: process.env.VERTEX_LLM_SERVICE_ACCOUNT,
   location: process.env.VERTEX_LLM_REGION,
@@ -46,6 +51,28 @@ const analyst = createBrandAnalyst({
     console.error(JSON.stringify(event));
   },
 });
+// Optional debugging capture contains only this public brand/hypothetical test.
+// It excludes cookies, workspace access hashes and provider credentials.
+const capture: Record<string, unknown> = {};
+function capturePublicTest(key: string, value: unknown) {
+  capture[key] = value;
+  if (process.env.PARTNER_MIX_TEST_CAPTURE)
+    writeFileSync(process.env.PARTNER_MIX_TEST_CAPTURE, JSON.stringify(capture, null, 2), {
+      mode: 0o600,
+    });
+}
+const analyst: BrandAnalyst = {
+  status: provider.status,
+  research: async (input) => {
+    const result = await provider.research(input);
+    capturePublicTest('research', { input, result });
+    return result;
+  },
+  assess: async (...args) => {
+    capturePublicTest('assessmentInput', args);
+    return provider.assess(...args);
+  },
+};
 const directory = await mkdtemp(join(tmpdir(), 'partner-mix-live-'));
 const app = await buildApp(new FileStore(directory), { qloo, analyst });
 try {
@@ -83,7 +110,7 @@ try {
   assert(current.research!.sources.length > 0);
   assert(
     !current.research!.analysis.questions.some((q) => q.blocking),
-    'The sample needs a campaign clarification before discovery.',
+    `The sample needs clarification: ${JSON.stringify(current.research!.analysis.questions.filter((q) => q.blocking))}`,
   );
   const references = (['core', 'adjacent'] as const).map((direction) => {
     const resolutions = current.research!.resolutions.filter((r) => r.direction === direction);

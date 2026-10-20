@@ -169,7 +169,7 @@ ${JSON.stringify(input.campaignBrief)}
 
 Understand what the brand sells, positioning, price point (unknown unless sourced), values/voice, current audience versus the desired audience, and market.
 Return a concise brand understanding, campaign objective, success measure, guardrails and up to five genuinely useful questions.
-Questions are blocking only when the missing answer prevents a reasonable search direction; prices/availability needing confirmation later are not blocking.
+Only missing campaign objective, intended audience, product category or geography may be blocking, and only when absent or contradictory enough to prevent a reasonable search direction. Specific SKU, finer demographic breakdowns, dates, prices, rights, audience verification and availability are follow-up questions, never blockers for this exploratory search. Do not re-ask information already supplied in the brief.
 Create exactly two partnership directions, id core and adjacent: explain the audience, why it serves THIS objective, and a concrete activation.
 Propose 1–2 named brands, books, films, podcasts or artists per direction as Qloo cultural reference hypotheses, with a reason connecting each to the brief. These are search inputs, not recommended partners.
 The current discovery product supports music artists and podcasts only. Qloo's artist type means musicians/bands, not illustrators, photographers, architects or generic influencers. Choose feasible directions for those supported formats; do not propose a visual-artist search this app cannot perform.

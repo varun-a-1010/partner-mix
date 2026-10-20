@@ -39,8 +39,9 @@ pages in the live probe, so the sample uses readable Allbirds official pages.
 The report proposes two directions and one or two cultural references each.
 Qloo search resolves those names; the user chooses identities and approves the
 understanding. Missing matches can be skipped when another confirmed reference
-exists for that direction, or corrected through re-analysis. Essential unanswered
-questions prevent approval. References are inputs, not recommended partners.
+exists for that direction, or corrected through re-analysis. Missing or contradictory objective, audience, product category or geography
+can prevent approval. Dates, specific SKUs and commercial due diligence stay
+nonblocking follow-ups for the exploratory search. References are inputs, not recommended partners.
 
 A source-bound intake fingerprint and unique research ID invalidate approval and
 assessments after re-analysis. Reference changes invalidate old assessments too.

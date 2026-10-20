@@ -11,7 +11,8 @@ import { FileStore } from '../server/store';
 import { researchBrand, approveBrand } from '../server/brand-workflow';
 import { runComparison } from '../server/workflow';
 import type { Entity, WorkspaceView } from '../shared/model';
-import { fixtureIntake, mockAnalyst } from './brand-fixture';
+import { attachTestStrategy, fixtureIntake, mockAnalyst } from './brand-fixture';
+import { legacyWorkspace } from './legacy-fixture';
 
 function mockQloo() {
   const refs: Entity[] = [
@@ -102,6 +103,28 @@ async function setup(qloo: Qloo, analyst = mockAnalyst()) {
   return { app, store, headers, created, current: () => w, change, approve };
 }
 describe('brand-first sample flow', () => {
+  it('invalidates strategic assessments when approved discovery references change', () => {
+    const w = legacyWorkspace().workspace;
+    attachTestStrategy(w);
+    const alternative = {
+      ...w.brief.segments[0].seeds[0],
+      entityId: randomUUID().toUpperCase(),
+      name: 'Alternative reference',
+    };
+    w.research!.resolutions = w.brief.segments.map((s) => ({
+      direction: s.id,
+      query: 'Test',
+      kind: s.seeds[0].kind,
+      reason: 'Test reference',
+      matches: [...s.seeds, ...(s.id === 'core' ? [alternative] : [])],
+    }));
+    approveBrand(w, [
+      { direction: 'core', entityIds: [alternative.entityId] },
+      { direction: 'adjacent', entityIds: [w.brief.segments[1].seeds[0].entityId] },
+    ]);
+    expect(w.candidates.every((c) => !c.assessment)).toBe(true);
+    expect(w.brief.segments[0].seeds[0].entityId).toBe(alternative.entityId);
+  });
   it('opens a real-brand brief offline without researching or suggesting any partner', async () => {
     const analyst = mockAnalyst();
     analyst.research = vi.fn(analyst.research);

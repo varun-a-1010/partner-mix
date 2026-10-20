@@ -2,6 +2,10 @@
 
 ## 2026-10-20
 
+- Tightened the distinction between essential brief questions and later due diligence,
+  made the hypothetical sample geography/timing/conversion definition explicit,
+  and added credential-free model-stage diagnostics for the opt-in live check.
+
 - Rebuilt the entry flow around the brand website and campaign brief, sourced
   Gemini understanding, explicit review and Qloo reference confirmation. Replaced
   fictional brand context with Allbirds and a hypothetical city-walking campaign.
