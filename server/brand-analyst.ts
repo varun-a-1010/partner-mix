@@ -31,6 +31,14 @@ export interface BrandAnalyst {
     evidence: Evidence,
   ): Promise<PartnerAssessment[]>;
 }
+export type AnalystDiagnostic = {
+  stage: 'research' | 'assessment';
+  outcome: 'complete' | 'invalid-output' | 'provider-error';
+  elapsedMs: number;
+  status?: number;
+  finishReason?: string;
+  validation?: string[];
+};
 export function publicWebsite(value: string) {
   const url = new URL(value);
   const host = url.hostname.replace(/^\[|\]$/g, '');
@@ -69,6 +77,7 @@ export function createBrandAnalyst(
     location?: string;
     model?: string;
     generate?: (request: GenerateContentParameters) => Promise<GenerateContentResponse>;
+    diagnostic?: (event: AnalystDiagnostic) => void;
   } = {},
 ): BrandAnalyst {
   const model = options.model ?? 'gemini-3.8-flash';
@@ -100,8 +109,11 @@ export function createBrandAnalyst(
         503,
         'Brand analysis is not connected. Configure the server’s Vertex connection.',
       );
+    const started = Date.now();
+    const stage = urls ? 'research' : 'assessment';
+    let response: GenerateContentResponse | undefined;
     try {
-      const response = await generate({
+      response = await generate({
         model,
         contents: prompt,
         config: {
@@ -116,12 +128,32 @@ export function createBrandAnalyst(
       });
       if (response.candidates?.[0]?.finishReason !== 'STOP' || !response.text)
         throw new Error('Incomplete result');
-      return { data: schema.parse(JSON.parse(response.text)), response };
+      const data = schema.parse(JSON.parse(response.text));
+      options.diagnostic?.({
+        stage,
+        outcome: 'complete',
+        elapsedMs: Date.now() - started,
+        finishReason: response.candidates?.[0]?.finishReason,
+      });
+      return { data, response };
     } catch (error) {
       if (error instanceof AppError) throw error;
+      const status = (error as { status?: unknown })?.status;
+      options.diagnostic?.({
+        stage,
+        outcome: response ? 'invalid-output' : 'provider-error',
+        elapsedMs: Date.now() - started,
+        ...(typeof status === 'number' ? { status } : {}),
+        finishReason: response?.candidates?.[0]?.finishReason,
+        ...(error instanceof z.ZodError
+          ? { validation: error.issues.map((i) => `${i.path.join('.')}: ${i.code}`) }
+          : {}),
+      });
       throw new AppError(
         502,
-        'Brand analysis could not finish. Your saved work is unchanged. Try again or use another public brand page.',
+        urls
+          ? 'Brand analysis could not finish. Your saved work is unchanged. Try again or use another public brand page.'
+          : 'The partner assessment could not finish. Your saved shortlist is unchanged. Try the comparison again.',
       );
     }
   }

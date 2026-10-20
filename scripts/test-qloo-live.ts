@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { createQloo } from '../server/qloo';
-import { createBrandAnalyst } from '../server/brand-analyst';
+import { createBrandAnalyst, type AnalystDiagnostic } from '../server/brand-analyst';
 import { allbirdsIntake } from '../server/sample';
 import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
@@ -36,10 +36,15 @@ const qloo = createQloo({
     return response;
   },
 });
+const diagnostics: AnalystDiagnostic[] = [];
 const analyst = createBrandAnalyst({
   project: process.env.VERTEX_LLM_PROJECT_ID,
   serviceAccount: process.env.VERTEX_LLM_SERVICE_ACCOUNT,
   location: process.env.VERTEX_LLM_REGION,
+  diagnostic: (event) => {
+    diagnostics.push(event);
+    console.error(JSON.stringify(event));
+  },
 });
 const directory = await mkdtemp(join(tmpdir(), 'partner-mix-live-'));
 const app = await buildApp(new FileStore(directory), { qloo, analyst });
@@ -166,6 +171,7 @@ try {
         qlooCalls: calls,
         model: current.research!.model,
         modelGenerations: 2,
+        diagnostics,
         research: { sources: current.research!.sources, analysis: current.research!.analysis },
         references: current.brief.segments.map((s) => ({
           direction: s.id,
