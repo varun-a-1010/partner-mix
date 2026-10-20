@@ -17,7 +17,10 @@ import { AppError, FileStore } from './store';
 import { createQloo, type Qloo } from './qloo';
 import { exportBrief, inputFingerprint, solve } from './solver';
 import { runComparison } from './workflow';
-import { populateQlooSample } from './sample';
+import { prepareSample, addSampleEstimates } from './sample';
+import { createBrandAnalyst, type BrandAnalyst } from './brand-analyst';
+import { approveBrand, researchBrand } from './brand-workflow';
+import { intakeSchema } from '../shared/brand';
 
 const idOf = (r: FastifyRequest) => (r.params as { id: string }).id;
 const cookieName = (id: string) => `pm_${id.replaceAll('-', '')}`;
@@ -26,6 +29,7 @@ export async function buildApp(
   store: FileStore,
   options: {
     qloo?: Qloo;
+    analyst?: BrandAnalyst;
     origin?: string;
     production?: boolean;
     staticRoot?: string;
@@ -34,8 +38,9 @@ export async function buildApp(
   if (options.production && !options.origin)
     throw new Error('APP_ORIGIN is required in production.');
   const qloo = options.qloo ?? createQloo();
+  const analyst = options.analyst ?? createBrandAnalyst();
   const active = new Set<string>();
-  const app = Fastify({ logger: false, bodyLimit: 32_768, trustProxy: false });
+  const app = Fastify({ logger: false, bodyLimit: 65_536, trustProxy: false });
   await app.register(cookie);
   await app.register(rateLimit, { max: 180, timeWindow: '1 minute' });
   app.addHook('onRequest', async (request, reply) => {
@@ -73,6 +78,7 @@ export async function buildApp(
     return {
       ...workspace,
       provider: qloo.status,
+      analyst: analyst.status,
       planning: solve(workspace),
       selectionStale: !!w.selection && w.selection.inputFingerprint !== inputFingerprint(w),
     };
@@ -90,15 +96,15 @@ export async function buildApp(
     const { version } = versionBody.parse(r.body);
     return view(await store.update(idOf(r), version, change));
   }
-  app.get('/api/health', async () => ({ ok: true, qloo: qloo.status }));
+  app.get('/api/health', async () => ({ ok: true, qloo: qloo.status, analyst: analyst.status }));
   app.post(
     '/api/workspaces',
     { config: { rateLimit: { max: 12, timeWindow: '1 hour' } } },
     async (r, reply) => {
       const { demo } = z.object({ demo: z.boolean().default(false) }).parse(r.body);
       const { workspace, secret } = newWorkspace(demo);
-      const ready = demo ? await populateQlooSample(workspace, qloo) : workspace;
-      await store.create(ready);
+      if (demo) prepareSample(workspace);
+      await store.create(workspace);
       reply.setCookie(cookieName(workspace.id), secret, {
         httpOnly: true,
         sameSite: 'strict',
@@ -106,10 +112,49 @@ export async function buildApp(
         path: '/api',
         maxAge: 60 * 60 * 24 * 90,
       });
-      return reply.code(201).send(view(ready));
+      return reply.code(201).send(view(workspace));
     },
   );
   app.get('/api/w/:id', async (r) => view(await owner(r)));
+  app.post(
+    '/api/w/:id/research',
+    { config: { rateLimit: { max: 6, timeWindow: '1 hour' } } },
+    async (r) => {
+      const w = await owner(r);
+      const { version, intake } = versionBody.extend({ intake: intakeSchema }).parse(r.body);
+      if (version !== w.version)
+        throw new AppError(409, 'The campaign changed. Reload before analyzing.');
+      if (active.has(w.id)) throw new AppError(409, 'A campaign analysis is already running.');
+      active.add(w.id);
+      try {
+        const result = await researchBrand(w, intake, analyst, qloo);
+        return view(
+          await store.update(w.id, version, (current) => {
+            current.intake = result.intake;
+            current.research = result.research;
+            current.brief = result.brief;
+          }),
+        );
+      } finally {
+        active.delete(w.id);
+      }
+    },
+  );
+  app.post('/api/w/:id/approve-brand', async (r) => {
+    const { references } = z
+      .object({
+        references: z
+          .array(
+            z.object({
+              direction: z.enum(['core', 'adjacent']),
+              entityIds: z.array(z.string().uuid()).min(1).max(4),
+            }),
+          )
+          .length(2),
+      })
+      .parse(r.body);
+    return mutate(r, (w) => approveBrand(w, references));
+  });
   app.patch('/api/w/:id/brief', async (r) => {
     const { brief } = z.object({ brief: briefSchema }).parse(r.body);
     return mutate(r, (w) => {
@@ -119,6 +164,16 @@ export async function buildApp(
         throw new AppError(
           422,
           'Clear partner amounts before changing currency. Values are never converted automatically.',
+        );
+      if (
+        w.research?.approved &&
+        (brief.brand !== w.brief.brand ||
+          brief.goal !== w.brief.goal ||
+          JSON.stringify(brief.segments) !== JSON.stringify(w.brief.segments))
+      )
+        throw new AppError(
+          422,
+          'Change the website or campaign brief and review the brand strategy again before changing its references.',
         );
       w.brief = brief;
     });
@@ -193,6 +248,7 @@ export async function buildApp(
         c.name = input.entity.name;
         c.description = input.entity.description;
         c.source = 'qloo';
+        delete c.assessment;
       }
     });
   });
@@ -218,7 +274,31 @@ export async function buildApp(
         throw new AppError(409, 'A comparison is already running for this campaign.');
       active.add(w.id);
       try {
-        const result = await runComparison(w, qloo, discover);
+        const result = await runComparison(
+          w,
+          qloo,
+          discover,
+          w.demo ? { discoveryPerGroup: 2 } : {},
+        );
+        if (discover && w.demo)
+          addSampleEstimates(
+            result,
+            new Set(
+              result.candidates
+                .filter((c) => !w.candidates.some((old) => old.id === c.id))
+                .map((c) => c.id),
+            ),
+          );
+        const assessments = await analyst.assess(
+          result.research!,
+          result.candidates,
+          result.evidence!,
+        );
+        for (const c of result.candidates)
+          c.assessment = assessments.find((a) => a.candidateId === c.id);
+        result.run!.steps.push(
+          'Assessed each partner against the reviewed brand, campaign objective and guardrails. Strategic fit remains a hypothesis, separate from Qloo affinity.',
+        );
         return view(
           await store.update(w.id, version, (current) => {
             current.candidates = result.candidates;
@@ -242,6 +322,8 @@ export async function buildApp(
         partners: w.candidates.filter((c) => p.partnerIds.includes(c.id)),
         brief: structuredClone(w.brief),
         evidence: structuredClone(w.evidence),
+        research: structuredClone(w.research),
+        intake: structuredClone(w.intake),
         chosenAt: new Date().toISOString(),
         inputFingerprint: inputFingerprint(w),
       };

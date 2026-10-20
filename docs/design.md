@@ -16,13 +16,13 @@ Type: locally served DM Sans for forms and editorial headings, with larger,
 slightly tight display text. No uppercase micro-labels or decorative numbering.
 Numeric budgets use tabular numerals.
 
-Layout: a slim persistent campaign rail, an editable brief, then a partner roster
+Layout: a slim persistent campaign rail, a website/brief intake and sourced brand review, then a partner roster
 and a larger package board. Package contents are stacked like a media schedule,
 with cost and unresolved work at the bottom. Everything is left aligned.
 
 ```text
-Campaign rail | Brief / budget / date
-              | Brief · Partners · Compare · Decision brief
+Campaign rail | Brand understanding / sources
+              | Brand · Budget · Partners · Compare · Decision brief
               | Editable partner roster | Package comparison
               |                         | Fit evidence / change receipt
 ```
@@ -33,3 +33,9 @@ characteristic element is the partner mix itself: coloured artist/podcast slots
 whose contributions and replacement decisions stay visible. No stock hero image
 or decorative dashboard metrics. Responsiveness, visible focus, semantic forms
 and reduced-motion support are required. Browser QA remains user-owned.
+
+The brand review is the main new visual surface: fact rows put source type beside
+statements; two direction panels connect audience hypotheses, rationale, activation
+and confirmed references. Approval separates research from recommendation. Existing
+green/coral tokens and DM Sans remain. Partner assessments show campaign roles and
+concerns above commercial inputs. Mobile fact rows and direction panels stack.

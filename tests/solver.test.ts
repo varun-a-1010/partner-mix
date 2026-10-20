@@ -9,8 +9,13 @@ import {
   spendLimit,
 } from '../server/solver';
 import { emptyOffer } from '../shared/model';
+import { attachTestStrategy } from './brand-fixture';
 
-const demo = () => legacyWorkspace().workspace;
+const demo = () => {
+  const w = legacyWorkspace().workspace;
+  attachTestStrategy(w);
+  return w;
+};
 describe('campaign portfolio decisions', () => {
   it('combines complementary partners instead of simply taking both core favorites', () => {
     const w = demo(),
@@ -125,10 +130,13 @@ describe('campaign portfolio decisions', () => {
       partners: w.candidates.filter((c) => p.partnerIds.includes(c.id)),
       brief: structuredClone(w.brief),
       evidence: structuredClone(w.evidence),
+      research: structuredClone(w.research),
+      intake: structuredClone(w.intake),
       chosenAt: new Date().toISOString(),
       inputFingerprint: inputFingerprint(w),
     };
     w.brief.goal = 'A changed goal';
+    w.research!.analysis.summary = 'A completely different brand.';
     const md = exportBrief(w);
     expect(md).toContain('out of date');
     expect(md).toContain('Fictional sample');
@@ -136,6 +144,8 @@ describe('campaign portfolio decisions', () => {
     expect(md).toContain(w.evidence!.comparisons[0].id);
     expect(md).not.toContain(w.ownerHash);
     expect(md).not.toContain('A changed goal');
+    expect(md).not.toContain('A completely different brand.');
+    expect(md).toContain('fictional test shoe brand');
   });
   it('works without Qloo and keeps estimates visibly unresolved', () => {
     const w = demo();
@@ -147,5 +157,26 @@ describe('campaign portfolio decisions', () => {
     expect(r.options).toHaveLength(1);
     expect(r.options[0].strategy).toBe('cost');
     expect(r.options[0].unresolved.join(' ')).toContain('obtain a written quote');
+  });
+  it('blocks unreviewed strategy and excludes poor, uncertain or stale strategic fits despite strong cultural ranks', () => {
+    const w = demo();
+    delete w.research!.approved;
+    expect(solve(w).options).toEqual([]);
+    attachTestStrategy(w);
+    w.candidates[0].assessment!.disposition = 'poor-fit';
+    w.candidates[5].assessment!.disposition = 'hold';
+    w.candidates[6].assessment!.researchId = 'previous-research';
+    const result = solve(w);
+    expect(result.options.length).toBeGreaterThan(0);
+    expect(result.excluded.map((e) => e.id)).toEqual(
+      expect.arrayContaining([w.candidates[0].id, w.candidates[5].id, w.candidates[6].id]),
+    );
+    for (const option of result.options) {
+      expect(option.partnerIds).not.toContain(w.candidates[0].id);
+      expect(option.partnerIds).not.toContain(w.candidates[5].id);
+      expect(option.partnerIds).not.toContain(w.candidates[6].id);
+    }
+    w.intake!.campaignBrief += ' A different target.';
+    expect(solve(w).options).toEqual([]);
   });
 });

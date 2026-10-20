@@ -4,20 +4,26 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { createQloo } from '../server/qloo';
+import { createBrandAnalyst } from '../server/brand-analyst';
+import { allbirdsIntake } from '../server/sample';
 import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
-import type { Entity, WorkspaceView } from '../shared/model';
+import type { WorkspaceView } from '../shared/model';
 
-// Opt-in, maximum ten upstream calls. Credentials only enter from the process
-// environment. All commercial inputs below are synthetic test data.
-assert(process.env.QLOO_API_KEY, 'Set QLOO_API_KEY in the process environment.');
+// Explicit opt-in: at most 12 Qloo calls and two Vertex model generations.
+// Only hypothetical commercial inputs; no user workspace or partner contacted.
+assert(process.env.QLOO_API_KEY, 'QLOO_API_KEY must be configured in process memory.');
+assert(
+  process.env.VERTEX_LLM_PROJECT_ID && process.env.VERTEX_LLM_SERVICE_ACCOUNT,
+  'Vertex must be configured in process memory.',
+);
 const sample = process.argv.includes('--sample');
 const calls: { path: string; kind: string | null; status: number; ms: number }[] = [];
 let requested = 0;
 const qloo = createQloo({
   apiKey: process.env.QLOO_API_KEY,
   fetch: async (input, init) => {
-    assert(++requested <= 10, 'Live request budget exhausted.');
+    assert(++requested <= 12, 'Live Qloo request budget exhausted.');
     const url = new URL(String(input)),
       start = Date.now();
     const response = await fetch(input, init);
@@ -30,8 +36,13 @@ const qloo = createQloo({
     return response;
   },
 });
+const analyst = createBrandAnalyst({
+  project: process.env.VERTEX_LLM_PROJECT_ID,
+  serviceAccount: process.env.VERTEX_LLM_SERVICE_ACCOUNT,
+  location: process.env.VERTEX_LLM_REGION,
+});
 const directory = await mkdtemp(join(tmpdir(), 'partner-mix-live-'));
-const app = await buildApp(new FileStore(directory), { qloo });
+const app = await buildApp(new FileStore(directory), { qloo, analyst });
 try {
   const headers: Record<string, string> = {
     host: 'localhost:5193',
@@ -46,94 +57,72 @@ try {
   assert.equal(created.statusCode, 201, created.body);
   headers.cookie = created.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
   let current = created.json<WorkspaceView>();
-  const seeds: Entity[] = current.brief.segments.flatMap((s) => s.seeds);
+  assert.equal(requested, 0, 'Opening a sample should not silently call providers.');
   async function change(
     path: string,
     payload: Record<string, unknown>,
     method: 'POST' | 'PATCH' = 'POST',
   ) {
-    const response = await app.inject({
+    const r = await app.inject({
       method,
       url: `/api/w/${current.id}${path}`,
       headers,
       payload: { ...payload, version: current.version },
     });
-    assert.equal(response.statusCode, 200, response.body);
-    current = response.json<WorkspaceView>();
+    assert.equal(r.statusCode, 200, r.body);
+    current = r.json<WorkspaceView>();
   }
-  if (sample) {
-    assert.equal(current.sample?.source, 'qloo');
-    assert(current.candidates.length >= 4 && current.candidates.length <= 8);
-    assert(current.candidates.every((c) => c.source === 'qloo' && c.entityId));
+  console.error('Checking sourced brand research…');
+  await change('/research', { intake: allbirdsIntake });
+  assert.equal(current.candidates.length, 0);
+  assert(current.research!.sources.length > 0);
+  assert(
+    !current.research!.analysis.questions.some((q) => q.blocking),
+    'The sample needs a campaign clarification before discovery.',
+  );
+  const references = (['core', 'adjacent'] as const).map((direction) => {
+    const resolutions = current.research!.resolutions.filter((r) => r.direction === direction);
+    const entityIds = resolutions.flatMap((r) => {
+      const exact = r.matches.find((e) => e.name.toLowerCase() === r.query.toLowerCase());
+      return exact ? [exact.entityId] : [];
+    });
     assert(
-      current.candidates.every(
-        (c) =>
-          c.offer.basis === 'estimate' &&
-          c.offer.availability === 'unknown' &&
-          c.offer.source.includes('not a quote'),
-      ),
+      entityIds.length,
+      `No exact reference for ${direction}; review the proposed identities before proceeding. Queries: ${resolutions.map((r) => r.query).join(', ')}`,
     );
-  } else {
-    for (const [query, kind] of [
-      ['Patagonia', 'brand'],
-      ['Daft Punk', 'artist'],
-    ] as const) {
-      const response = await app.inject({
-        method: 'POST',
-        url: `/api/w/${current.id}/search`,
-        headers,
-        payload: { query, kind },
-      });
-      assert.equal(response.statusCode, 200, response.body);
-      const entities = response.json().entities as Entity[];
-      const entity = entities.find((e) => e.name.toLowerCase() === query.toLowerCase());
-      assert(entity, `No exact ${kind} match for ${query}; human entity confirmation needed.`);
-      seeds.push(entity);
-    }
-    await change(
-      '/brief',
-      {
-        brief: {
-          ...current.brief,
-          campaign: 'Synthetic live API verification',
-          budget: 1_000_000,
-          segments: current.brief.segments.map((s, i) => ({ ...s, seeds: [seeds[i]] })),
-        },
-      },
-      'PATCH',
-    );
-    await change('/compare', { discover: true });
-    for (const c of [...current.candidates]) {
+    return { direction, entityIds: [...new Set(entityIds)] };
+  });
+  await change('/approve-brand', { references });
+  console.error('Checking live Qloo discovery and Gemini partner assessments…');
+  await change('/compare', { discover: true });
+  if (!sample) {
+    await change('/brief', { brief: { ...current.brief, budget: 1_000_000 } }, 'PATCH');
+    for (const c of [...current.candidates])
       await change(
         `/candidates/${c.id}`,
         {
           offer: {
             ...c.offer,
-            amount: c.kind === 'artist' ? 200_000 : 100_000,
+            amount: c.kind === 'artist' ? 20_000 : 10_000,
             basis: 'estimate',
-            source: 'Synthetic verification only; not a real rate',
-            deliverables: 'Synthetic test scope; nothing offered or agreed',
+            source: 'Synthetic live verification; not a real quote.',
           },
         },
         'PATCH',
       );
-    }
   }
   assert(
-    current.candidates.some((c) => c.kind === 'artist'),
-    'No artists discovered.',
-  );
-  assert(
-    current.candidates.some((c) => c.kind === 'podcast'),
-    'No podcasts discovered.',
+    current.candidates.every(
+      (c) => c.source === 'qloo' && c.entityId && c.assessment?.researchId === current.research!.id,
+    ),
   );
   assert.equal(current.evidence?.comparisons.length, 4);
   assert(current.evidence!.comparisons.every((q) => q.source === 'qloo'));
   assert.equal(current.planning.evidenceStatus, 'current');
-  const before = requested;
-  await change('/compare', { discover: false });
-  assert.equal(requested, before, 'Repeated comparison should use the process-local cache.');
-  assert(current.planning.options.length > 0, 'No feasible package after synthetic costs.');
+  assert(
+    current.planning.options.length,
+    `No feasible mix: ${JSON.stringify(current.planning.blockers)}. Assessments: ${JSON.stringify(current.candidates.map((c) => ({ name: c.name, disposition: c.assessment?.disposition })))}`,
+  );
   await change('/select', { packageId: current.planning.options[0].id });
   const firstSelection = current.selection!;
   const anchor = current.candidates.find((c) => c.id === firstSelection.package.partnerIds[0])!;
@@ -145,81 +134,71 @@ try {
     'PATCH',
   );
   assert(current.selectionStale);
-  assert(current.planning.options.length > 0, 'No replacement candidate.');
+  assert(
+    current.planning.options.length,
+    'No suitable replacement after the test availability change.',
+  );
   assert(
     current.planning.options.every(
       (p) => p.partnerIds.includes(anchor.id) && !p.partnerIds.includes(removed.id),
     ),
   );
   await change('/select', { packageId: current.planning.options[0].id });
-  assert(current.revision?.retained.includes(anchor.id));
-  assert(current.revision?.removed.includes(removed.id));
   const exported = await app.inject({ url: `/api/w/${current.id}/brief.md`, headers });
   assert.equal(exported.statusCode, 200);
+  assert(exported.body.includes('Brand understanding and campaign strategy'));
+  assert(exported.body.includes('Campaign role:'));
+  assert(exported.body.includes('Activation hypothesis:'));
   assert(
     exported.body.includes(
-      sample ? 'Illustrative sample budget input' : 'Synthetic verification only',
+      sample ? 'not a quote from this partner' : 'Synthetic live verification',
     ),
   );
-  if (sample) {
-    assert(exported.body.includes('Real artists, podcasts and cultural rankings from Qloo'));
-    assert(exported.body.includes('availability is unconfirmed'));
-  }
-  const report = {
-    at: new Date().toISOString(),
-    sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
-    flow: sample ? 'Real Qloo sample creation' : 'Empty campaign with live discovery',
-    upstreamCalls: requested,
-    calls,
-    inputEntities: seeds.map((s) => ({ name: s.name, kind: s.kind, entityId: s.entityId })),
-    discovered: {
-      artists: current.candidates.filter((c) => c.kind === 'artist').length,
-      podcasts: current.candidates.filter((c) => c.kind === 'podcast').length,
-    },
-    ...(sample
-      ? {
-          sampleProvenance: current.sample,
-          partners: current.candidates.map((c) => ({
-            name: c.name,
-            kind: c.kind,
-            entityId: c.entityId,
-          })),
-          initialAvailabilityUnknown: true,
-          sampleCostsExplicitlyIllustrative: true,
-        }
-      : {}),
-    comparisons: current.evidence!.comparisons.map((q) => ({
-      segment: q.segment,
-      kind: q.kind,
-      returned: q.results.length,
-      requested: q.candidateIds.length,
-      ...(sample
-        ? {
-            ranks: q.results.map((r) => ({
-              name: current.candidates.find((c) => c.id === r.candidateId)!.name,
-              rank: r.rank,
-            })),
-          }
-        : {}),
-    })),
-    evidenceStatus: current.planning.evidenceStatus,
-    firstMix: firstSelection.partners.map((c) => ({
-      name: c.name,
-      kind: c.kind,
-      entityId: c.entityId,
-    })),
-    repair: {
-      kept: anchor.name,
-      replaced: removed.name,
-      newMix: current.selection!.partners.map((c) => c.name),
-    },
-    cacheReused: true,
-    privateApiAndExportChecked: true,
-    commercialInputs:
-      'All prices, deliverables, availability changes and budget are synthetic. No real offer or marketing outcome is claimed.',
-    cleanup: 'Temporary workspace removed in finally; no demo data inserted into the user store.',
-  };
-  console.log(JSON.stringify(report, null, 2));
+  assert.equal((await app.inject({ url: `/api/w/${current.id}/brief.md` })).statusCode, 404);
+  console.log(
+    JSON.stringify(
+      {
+        at: new Date().toISOString(),
+        sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+        flow: sample
+          ? 'Allbirds hypothetical sample: website → reviewed strategy → Qloo → partner assessment → mix → repair → export'
+          : 'Empty campaign with Allbirds hypothetical brief',
+        qlooCalls: calls,
+        model: current.research!.model,
+        modelGenerations: 2,
+        research: { sources: current.research!.sources, analysis: current.research!.analysis },
+        references: current.brief.segments.map((s) => ({
+          direction: s.id,
+          name: s.name,
+          entities: s.seeds.map((e) => ({ name: e.name, kind: e.kind, entityId: e.entityId })),
+        })),
+        partners: current.candidates.map((c) => ({
+          name: c.name,
+          kind: c.kind,
+          entityId: c.entityId,
+          assessment: c.assessment,
+        })),
+        comparisons: current.evidence!.comparisons.map((q) => ({
+          direction: q.segment,
+          kind: q.kind,
+          returned: q.results.length,
+          requested: q.candidateIds.length,
+        })),
+        firstMix: firstSelection.partners.map((c) => c.name),
+        repair: {
+          kept: anchor.name,
+          removed: removed.name,
+          newMix: current.selection!.partners.map((c) => c.name),
+        },
+        privateApiAndExportChecked: true,
+        commercialInputs:
+          'Campaign, prices, deliverables and availability edits are hypothetical. No relationship with Allbirds or the partners, real offer, demographic or campaign result is claimed.',
+        cleanup: 'Temporary workspace removed; existing user campaigns untouched.',
+      },
+      null,
+      2,
+    ),
+  );
 } finally {
   await app.close();
   await rm(directory, { recursive: true, force: true });

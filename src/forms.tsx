@@ -3,6 +3,8 @@ import { Search, X, LockKeyhole, UnlockKeyhole, Music2, Mic2, Plus, Trash2 } fro
 import type { Brief, Candidate, Entity, Offer, SeedKind, WorkspaceView } from '../shared/model';
 import { isLegacySample, money } from '../shared/model';
 import { api } from './api';
+import { brandReady } from '../shared/brand';
+import { PartnerCase } from './brand';
 
 export type Mutate = (
   path: string,
@@ -142,14 +144,6 @@ export function EntityFinder({
 export function BriefEditor({ w, mutate }: { w: WorkspaceView; mutate: Mutate }) {
   const [brief, setBrief] = useState<Brief>(w.brief);
   const set = <K extends keyof Brief>(k: K, v: Brief[K]) => setBrief((b) => ({ ...b, [k]: v }));
-  function setGroup(index: number, update: Partial<Brief['segments'][number]>) {
-    setBrief((b) => ({
-      ...b,
-      segments: b.segments.map((s, i) =>
-        i === index ? { ...s, ...update } : s,
-      ) as Brief['segments'],
-    }));
-  }
   return (
     <form
       className="brief-editor"
@@ -160,8 +154,8 @@ export function BriefEditor({ w, mutate }: { w: WorkspaceView; mutate: Mutate })
     >
       <div className="section-heading">
         <div>
-          <h2>The campaign brief</h2>
-          <p>Give the mix a purpose and a practical boundary.</p>
+          <h2>Budget and timing</h2>
+          <p>Set the practical boundaries for the reviewed campaign strategy.</p>
         </div>
         <button className="primary" type="submit">
           Save brief
@@ -169,31 +163,12 @@ export function BriefEditor({ w, mutate }: { w: WorkspaceView; mutate: Mutate })
       </div>
       <div className="form-grid">
         <label>
-          Brand
-          <input
-            required
-            maxLength={200}
-            value={brief.brand}
-            onChange={(e) => set('brand', e.target.value)}
-          />
-        </label>
-        <label>
           Campaign name
           <input
             required
             maxLength={200}
             value={brief.campaign}
             onChange={(e) => set('campaign', e.target.value)}
-          />
-        </label>
-        <label className="full">
-          What should this campaign achieve?
-          <textarea
-            required
-            maxLength={1000}
-            rows={3}
-            value={brief.goal}
-            onChange={(e) => set('goal', e.target.value)}
           />
         </label>
         <label>
@@ -265,64 +240,9 @@ export function BriefEditor({ w, mutate }: { w: WorkspaceView; mutate: Mutate })
           Include at least one artist and one podcast
         </label>
       </div>
-      <div className="section-heading spaced">
-        <div>
-          <h2>Two groups to connect</h2>
-          <p>
-            Use taste references as hypotheses about your audience. They aren’t measured customer
-            profiles.
-          </p>
-        </div>
-      </div>
-      <div className="group-grid">
-        {brief.segments.map((s, i) => (
-          <section className={`audience audience-${s.id}`} key={s.id}>
-            <span className="audience-role">
-              {s.id === 'core' ? 'Your existing audience' : 'An adjacent audience'}
-            </span>
-            <label>
-              Group name
-              <input
-                required
-                value={s.name}
-                maxLength={200}
-                onChange={(e) => setGroup(i, { name: e.target.value })}
-              />
-            </label>
-            <p className="hint">
-              Choose up to four brands, artists or cultural references this group might enjoy.
-            </p>
-            <div className="seed-list">
-              {s.seeds.map((seed) => (
-                <span className="seed" key={seed.entityId}>
-                  {seed.name}
-                  <button
-                    type="button"
-                    aria-label={`Remove ${seed.name}`}
-                    onClick={() =>
-                      setGroup(i, { seeds: s.seeds.filter((e) => e.entityId !== seed.entityId) })
-                    }
-                  >
-                    <X size={14} />
-                  </button>
-                </span>
-              ))}
-            </div>
-            {s.seeds.length < 4 && (
-              <EntityFinder
-                w={w}
-                choose={(entity) => {
-                  if (!s.seeds.some((e) => e.entityId === entity.entityId))
-                    setGroup(i, { seeds: [...s.seeds, entity] });
-                }}
-              />
-            )}
-          </section>
-        ))}
-      </div>
       <div className="form-footer">
         <p className="hint">
-          Saving changed references makes previous cultural comparisons out of date.
+          Brand strategy and audience references are reviewed in Brand & campaign.
         </p>
         <button className="primary" type="submit">
           Save brief
@@ -503,7 +423,7 @@ export function Roster({
           <button
             className="primary"
             onClick={discover}
-            disabled={isLegacySample(w) || w.provider !== 'configured'}
+            disabled={!brandReady(w) || isLegacySample(w) || w.provider !== 'configured'}
           >
             Discover with Qloo
           </button>
@@ -559,8 +479,8 @@ export function Roster({
           </div>
           <h3>A good mix starts with possibilities.</h3>
           <p>
-            Save your audience references, discover candidates, then add the offers you want to
-            compare.
+            Review the brand and partnership directions first. Discovery will explain each partner’s
+            potential campaign role and where the fit needs checking.
           </p>
         </div>
       )}
@@ -593,6 +513,7 @@ export function Roster({
                   <span>{c.offer.basis === 'quote' ? 'Entered quote' : 'Estimate'}</span>
                 </div>
               </div>
+              <PartnerCase candidate={c} researchId={w.research?.id} />
               {c.offer.deliverables && <p className="deliverables">{c.offer.deliverables}</p>}
               {blocked && <p className="form-error">{blocked.reason}</p>}
               <div className="partner-actions">

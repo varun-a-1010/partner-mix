@@ -12,37 +12,38 @@ not a promise that those partners are willing to participate.
 
 ## Implemented flow
 
-1. Create an empty campaign or open a sample that discovers real Qloo partners
-   from Patagonia and Daft Punk references. Sample costs and activation ideas
-   are illustrative; availability starts unconfirmed.
-2. Set the brand, objective, budget, currency, reserve, dates, partner count (2 or 3)
-   and whether the package must contain both formats.
-3. Define core and adjacent audience hypotheses with up to four confirmed Qloo
-   entities each. Supported inputs: brand, artist, podcast, movie, book.
-4. Discover artists and podcasts, select entities through search, or enter
-   partners manually. A manual entry can later be linked to Qloo without losing
-   its offer. A shortlist is capped at 24.
-5. Enter whole-currency costs, estimate/quote basis and source, deliverables,
-   availability dates and optional exclusivity group. Unknown costs never enter
-   a costed package. Estimates and unknown availability remain explicit.
-6. Compare distinct packages using hard constraints first. With complete current
-   Qloo evidence, compare balanced, core-first and adjacent-first objectives, plus
-   a budget-first alternative where distinct. Show at most three unique optima.
-7. Choose a package and save its complete input/evidence snapshot.
-8. Lock partners, change quotes or availability, and choose a revised package.
-   Show retained, replaced and added partners and the cost change.
-9. Export a Markdown decision brief with source dates, unresolved confirmations
-   and a simple pilot measurement plan. A stale decision exports with a warning
-   and the original evidence, rather than newer unrelated evidence.
+1. Create an empty campaign or open Allbirds with a hypothetical city-walking brief.
+   Creation does not call either provider or invent a shortlist.
+2. Supply a public brand website, a campaign brief, and optionally two supporting
+   pages. Gemini URL Context reads those exact pages and returns sourced facts,
+   brief assumptions, hypotheses, unknowns, guardrails and questions.
+3. Review or correct the understanding. Two campaign-specific partnership directions
+   propose named cultural references, resolved through Qloo search. Confirm the
+   identities and approve both directions before discovery.
+4. Discover music artists and podcasts, then assess every candidate against the
+   reviewed brand, objective and guardrails. Each gets a campaign role, activation
+   hypothesis, concerns and an investigate/hold/poor-fit disposition. Hold, poor-fit
+   and unassessed candidates cannot enter proposed mixes.
+5. Set budget, currency, reserve, dates, partner count (2 or 3), and format mix.
+   Enter costs, estimate/quote basis, source, deliverables, availability and any
+   exclusivity group. Costs in the sample are illustrative, never Qloo quotes.
+6. Compare feasible packages, then choose and snapshot a decision. Lock partners,
+   change offers or availability, and revise without silently dropping locks.
+7. Export a Markdown decision with the reviewed brand strategy, source links,
+   partner rationale, cultural evidence and unresolved commercial questions.
 
-Packages recalculate when inputs are saved. Qloo comparisons run only after a
-user action; ordinary commercial edits reuse the existing evidence.
+Changing the website/brief requires re-analysis and review. Changing approved
+references invalidates partner assessments. Financial edits recalculate the solver
+without new provider calls. Old campaigns are preserved but cannot bypass review.
 
 ## Boundaries
 
-No LLM tool-calling agent is implemented yet. The Qloo workflow is bounded and
-deterministic, as is the solver. A later submission should describe this honestly
-and add a genuine planning agent if required by the selected event's rules.
+Gemini performs sourced brand analysis and strategic interpretation. Provider calls
+and the portfolio solver are bounded, not an autonomous open-ended planning loop.
+The app reads at most three exact supplied pages; it does not crawl an entire site.
+Blocked websites require a different readable official page. No invented fallback
+profile is substituted. Source retrieval is checked, factual correctness still
+requires human review.
 
 No prices, reach, audience overlap, incremental lift, ROI, creator willingness,
 endorsement, availability or rights are inferred from Qloo. No contacts or

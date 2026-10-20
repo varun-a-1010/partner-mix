@@ -32,8 +32,9 @@ showing where Qloo affects a choice. Existing individual evidence, constraints,
 locks and revision comparison already cover much of the foundation. This
 separate repo does not change Common Hours.
 
-For Partner Mix, the first pass deliberately establishes the validated tools
-before any LLM orchestration: resolve, discover, compare, constrain, choose,
-repair, explain and export. A genuine tool-calling assistant can later work over
-these boundaries. The current product must not be advertised as already having
-that LLM layer.
+Partner Mix now starts with the manager's actual information: the brand website
+and campaign brief. A reviewed understanding of products, positioning, desired
+audience and guardrails determines search directions. Gemini adds a separate
+strategic assessment after Qloo discovery; affinity alone does not establish fit.
+The constrained combination and repair workflow remains the differentiator.
+The fixed orchestration is not an autonomous negotiation or outreach agent.

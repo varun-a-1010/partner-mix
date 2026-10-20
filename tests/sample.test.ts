@@ -1,45 +1,48 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { randomUUID } from 'node:crypto';
-import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildApp } from '../server/app';
 import { newWorkspace } from '../server/data';
 import { createQloo, type Qloo } from '../server/qloo';
-import { populateQlooSample, sampleReferences } from '../server/sample';
+import { allbirdsIntake } from '../server/sample';
 import { FileStore } from '../server/store';
-import { evidenceFingerprint, solve } from '../server/solver';
+import { researchBrand, approveBrand } from '../server/brand-workflow';
+import { runComparison } from '../server/workflow';
 import type { Entity, WorkspaceView } from '../shared/model';
+import { fixtureIntake, mockAnalyst } from './brand-fixture';
 
 function mockQloo() {
-  const artists: Entity[] = Array.from({ length: 6 }, (_, i) => ({
-    entityId: randomUUID().toUpperCase(),
-    name: `Returned artist ${i}`,
-    kind: 'artist',
-    description: 'Provider metadata',
-  }));
-  const podcasts: Entity[] = Array.from({ length: 6 }, (_, i) => ({
-    entityId: randomUUID().toUpperCase(),
-    name: `Returned podcast ${i}`,
-    kind: 'podcast',
-    description: 'Provider metadata',
-  }));
+  const refs: Entity[] = [
+    { entityId: randomUUID().toUpperCase(), name: 'Test brand', kind: 'brand', description: '' },
+    {
+      entityId: randomUUID().toUpperCase(),
+      name: 'Test musician',
+      kind: 'artist',
+      description: '',
+    },
+  ];
+  const entities: Entity[] = (['artist', 'podcast'] as const).flatMap((kind) =>
+    Array.from({ length: 6 }, (_, i) => ({
+      entityId: randomUUID().toUpperCase(),
+      name: `Returned ${kind} ${i}`,
+      kind,
+      description: 'Provider description',
+    })),
+  );
   const qloo: Qloo = {
     status: 'configured',
-    search: vi.fn(async (query, kind) =>
-      sampleReferences
-        .filter((r) => r.name === query && r.kind === kind)
-        .map((r) => ({ ...r, description: 'Resolved reference' })),
-    ),
+    search: vi.fn(async (query, kind) => refs.filter((r) => r.name === query && r.kind === kind)),
     insights: vi.fn(async (kind, seedIds, ids) => {
-      const all = kind === 'artist' ? artists : podcasts;
-      const group = seedIds[0] === sampleReferences[0].entityId ? 0 : 3;
+      const all = entities.filter((e) => e.kind === kind);
+      const offset = seedIds[0] === refs[0].entityId ? 0 : 3;
       const returned = ids
         ? all.filter((e) => ids.includes(e.entityId)).reverse()
-        : all.slice(group, group + 3);
+        : all.slice(offset, offset + 3);
       return {
         id: randomUUID(),
-        fetchedAt: '2026-10-20T00:00:00.000Z',
+        fetchedAt: new Date().toISOString(),
         seedIds,
         results: returned.map((entity, i) => ({
           entity,
@@ -55,26 +58,78 @@ const cleanups: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
   for (const close of cleanups.splice(0).reverse()) await close();
 });
-async function setup(qloo: Qloo) {
+async function setup(qloo: Qloo, analyst = mockAnalyst()) {
   const directory = await mkdtemp(join(tmpdir(), 'partner-mix-sample-'));
   cleanups.push(() => rm(directory, { recursive: true, force: true }));
-  const app = await buildApp(new FileStore(directory), { qloo });
+  const store = new FileStore(directory);
+  const app = await buildApp(store, { qloo, analyst });
   cleanups.push(() => app.close());
-  return { app, directory, headers: { host: 'localhost:5193', origin: 'http://localhost:5193' } };
+  const headers: Record<string, string> = {
+    host: 'localhost:5193',
+    origin: 'http://localhost:5193',
+  };
+  const created = await app.inject({
+    method: 'POST',
+    url: '/api/workspaces',
+    headers,
+    payload: { demo: true },
+  });
+  headers.cookie = created.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+  let w = created.json<WorkspaceView>();
+  const change = async (
+    path: string,
+    payload: Record<string, unknown>,
+    method: 'POST' | 'PATCH' = 'POST',
+  ) => {
+    const r = await app.inject({
+      method,
+      url: `/api/w/${w.id}${path}`,
+      headers,
+      payload: { version: w.version, ...payload },
+    });
+    if (r.statusCode === 200) w = r.json();
+    return r;
+  };
+  const approve = () =>
+    change('/approve-brand', {
+      references: (['core', 'adjacent'] as const).map((direction) => ({
+        direction,
+        entityIds: w
+          .research!.resolutions.filter((r) => r.direction === direction)
+          .flatMap((r) => r.matches.slice(0, 1).map((e) => e.entityId)),
+      })),
+    });
+  return { app, store, headers, created, current: () => w, change, approve };
 }
-describe('real Qloo sample', () => {
-  it('resolves references and uses discovered identities and returned rankings, while keeping commercial inputs illustrative', async () => {
-    const qloo = mockQloo();
-    const w = await populateQlooSample(newWorkspace(true).workspace, qloo);
+describe('brand-first sample flow', () => {
+  it('opens a real-brand brief offline without researching or suggesting any partner', async () => {
+    const analyst = mockAnalyst();
+    analyst.research = vi.fn(analyst.research);
+    const s = await setup(createQloo(), analyst);
+    expect(s.created.statusCode).toBe(201);
+    expect(s.current().intake).toEqual(allbirdsIntake);
+    expect(s.current().brief.brand).toBe('Allbirds');
+    expect(s.current().candidates).toEqual([]);
+    expect(s.current().planning.options).toEqual([]);
+    expect(analyst.research).not.toHaveBeenCalled();
+    expect((await s.change('/compare', { discover: true })).statusCode).toBe(422);
+  });
+  it('requires research and explicit review before discovery, then assesses every identity and exports the strategy', async () => {
+    const qloo = mockQloo(),
+      s = await setup(qloo);
+    expect((await s.change('/research', { intake: allbirdsIntake })).statusCode).toBe(200);
     expect(qloo.search).toHaveBeenCalledTimes(2);
+    expect(qloo.insights).not.toHaveBeenCalled();
+    expect((await s.change('/compare', { discover: true })).statusCode).toBe(422);
+    expect((await s.approve()).statusCode).toBe(200);
+    expect((await s.change('/compare', { discover: true })).statusCode).toBe(200);
+    const w = s.current();
     expect(qloo.insights).toHaveBeenCalledTimes(8);
-    expect(w.sample?.source).toBe('qloo');
-    expect(w.brief.segments.map((s) => s.seeds[0].entityId)).toEqual(
-      sampleReferences.map((r) => r.entityId),
-    );
     expect(w.candidates).toHaveLength(8);
     expect(
-      w.candidates.every((c) => c.source === 'qloo' && c.entityId && c.name.startsWith('Returned')),
+      w.candidates.every(
+        (c) => c.source === 'qloo' && c.entityId && c.assessment?.researchId === w.research!.id,
+      ),
     ).toBe(true);
     expect(
       w.candidates.every(
@@ -84,109 +139,114 @@ describe('real Qloo sample', () => {
           c.offer.source.includes('not a quote'),
       ),
     ).toBe(true);
-    expect(
-      w.evidence!.comparisons.every((q) => q.source === 'qloo' && q.results.length === 4),
-    ).toBe(true);
-    expect(w.evidence!.comparisons[0].results[0].candidateId).toBe(
-      w.candidates.filter((c) => c.kind === 'artist').at(-1)!.id,
+    expect(w.planning.evidenceStatus).toBe('current');
+    expect(w.planning.options.length).toBeGreaterThan(0);
+    expect((await s.change('/select', { packageId: w.planning.options[0].id })).statusCode).toBe(
+      200,
     );
-    expect(w.evidence!.fingerprint).toBe(evidenceFingerprint(w));
-    expect(solve(w).evidenceStatus).toBe('current');
-    expect(solve(w).options.length).toBeGreaterThan(0);
-    expect(solve(w).options[0].unresolved.join(' ')).toContain('availability is unconfirmed');
-  });
-  it('rejects an unconfirmed reference rather than picking a similarly named entity', async () => {
-    const qloo = mockQloo();
-    qloo.search = vi.fn(async (): Promise<Entity[]> => [
-      { entityId: randomUUID(), name: 'Patagonia', kind: 'brand', description: '' },
-    ]);
-    await expect(populateQlooSample(newWorkspace(true).workspace, qloo)).rejects.toThrow(
-      'could not confirm',
-    );
-    expect(qloo.insights).not.toHaveBeenCalled();
-  });
-  it('keeps incomplete provider results unknown instead of inventing missing ranks', async () => {
-    const qloo = mockQloo(),
-      full = qloo.insights;
-    qloo.insights = async (kind, seeds, ids) => {
-      const result = await full(kind, seeds, ids);
-      if (ids && kind === 'podcast') result.results.pop();
-      return result;
-    };
-    const w = await populateQlooSample(newWorkspace(true).workspace, qloo);
-    expect(solve(w).evidenceStatus).toBe('partial');
-    expect(solve(w).options.every((p) => p.strategy === 'cost')).toBe(true);
-  });
-  it('does not persist a half-built sample when Qloo fails', async () => {
-    const qloo = mockQloo();
-    qloo.insights = vi.fn(async () => {
-      throw new Error('Upstream failed');
-    });
-    const { app, headers, directory } = await setup(qloo);
-    const response = await app.inject({
-      method: 'POST',
-      url: '/api/workspaces',
-      headers,
-      payload: { demo: true },
-    });
-    expect(response.statusCode).toBe(500);
-    expect(response.headers['set-cookie']).toBeUndefined();
-    expect(await readdir(directory)).toEqual([]);
-  });
-  it('requires a connection for samples but still allows empty campaigns offline', async () => {
-    const { app, headers, directory } = await setup(createQloo());
-    const sample = await app.inject({
-      method: 'POST',
-      url: '/api/workspaces',
-      headers,
-      payload: { demo: true },
-    });
-    expect(sample.statusCode).toBe(503);
-    expect(await readdir(directory)).toEqual([]);
-    const empty = await app.inject({
-      method: 'POST',
-      url: '/api/workspaces',
-      headers,
-      payload: { demo: false },
-    });
-    expect(empty.statusCode).toBe(201);
-    expect(empty.json().candidates).toEqual([]);
-  });
-  it('lets the sample refresh real evidence and exports the distinction between Qloo data and estimates', async () => {
-    const qloo = mockQloo(),
-      { app, headers } = await setup(qloo);
-    const response = await app.inject({
-      method: 'POST',
-      url: '/api/workspaces',
-      headers,
-      payload: { demo: true },
-    });
-    expect(response.statusCode).toBe(201);
-    let w = response.json<WorkspaceView>();
-    const authenticated = {
-      ...headers,
-      cookie: response.cookies.map((c) => `${c.name}=${c.value}`).join('; '),
-    };
-    const refreshed = await app.inject({
-      method: 'POST',
-      url: `/api/w/${w.id}/compare`,
-      headers: authenticated,
-      payload: { version: w.version, discover: false },
-    });
-    expect(refreshed.statusCode).toBe(200);
-    expect(qloo.insights).toHaveBeenCalledTimes(12);
-    w = refreshed.json();
-    const selected = await app.inject({
-      method: 'POST',
-      url: `/api/w/${w.id}/select`,
-      headers: authenticated,
-      payload: { version: w.version, packageId: w.planning.options[0].id },
-    });
-    expect(selected.statusCode).toBe(200);
-    const exported = await app.inject({ url: `/api/w/${w.id}/brief.md`, headers: authenticated });
-    expect(exported.body).toContain('Real artists, podcasts and cultural rankings from Qloo');
+    const exported = await s.app.inject({ url: `/api/w/${w.id}/brief.md`, headers: s.headers });
+    expect(exported.body).toContain('Brand understanding and campaign strategy');
+    expect(exported.body).toContain('Campaign role:');
     expect(exported.body).toContain('availability is unconfirmed');
-    expect(exported.body).not.toContain('Partners, offers and rankings are illustrative');
     expect(exported.body).toContain('not a quote from this partner');
+    expect(
+      (await s.change('/brief', { brief: { ...s.current().brief, budget: 30_000 } }, 'PATCH'))
+        .statusCode,
+    ).toBe(200);
+    expect(s.current().research?.approved).toBeDefined();
+    expect(
+      (
+        await s.change(
+          '/brief',
+          { brief: { ...s.current().brief, goal: 'Bypass the reviewed goal' } },
+          'PATCH',
+        )
+      ).statusCode,
+    ).toBe(422);
+  });
+  it('keeps saved work unchanged if research or partner assessment fails', async () => {
+    const analyst = mockAnalyst(),
+      s = await setup(mockQloo(), analyst);
+    analyst.research = async () => {
+      throw new Error('Upstream failure containing private material');
+    };
+    const failed = await s.change('/research', { intake: allbirdsIntake });
+    expect(failed.statusCode).toBe(500);
+    expect(failed.body).not.toContain('private material');
+    expect((await s.store.get(s.current().id))?.version).toBe(1);
+    analyst.research = mockAnalyst().research;
+    await s.change('/research', { intake: allbirdsIntake });
+    await s.approve();
+    analyst.assess = async () => {
+      throw new Error('Failed assessment');
+    };
+    expect((await s.change('/compare', { discover: true })).statusCode).toBe(500);
+    expect((await s.store.get(s.current().id))?.candidates).toEqual([]);
+  });
+  it('rejects fabricated references and essential unanswered questions', async () => {
+    const qloo = mockQloo(),
+      w = await researchBrand(newWorkspace().workspace, fixtureIntake, mockAnalyst(), qloo);
+    expect(() =>
+      approveBrand(w, [
+        { direction: 'core', entityIds: [randomUUID()] },
+        { direction: 'adjacent', entityIds: [randomUUID()] },
+      ]),
+    ).toThrow('confirmed Qloo');
+    w.research!.analysis.questions = [
+      { question: 'Which product?', why: 'Required test constraint.', blocking: true },
+    ];
+    expect(() => approveBrand(w, [])).toThrow('essential questions');
+  });
+  it('invalidates approval and assessments when the campaign changes, preserving prior partners', async () => {
+    const s = await setup(mockQloo());
+    await s.change('/research', { intake: fixtureIntake });
+    await s.approve();
+    await s.change('/compare', { discover: true });
+    const ids = s.current().candidates.map((c) => c.id);
+    await s.change('/research', {
+      intake: {
+        ...fixtureIntake,
+        campaignBrief: fixtureIntake.campaignBrief + ' Now target a different market.',
+      },
+    });
+    expect(s.current().research?.approved).toBeUndefined();
+    expect(s.current().candidates.map((c) => c.id)).toEqual(ids);
+    expect(s.current().planning.options).toEqual([]);
+    await s.approve();
+    expect(s.current().planning.options).toEqual([]);
+  });
+  it('discards research completed after a concurrent edit', async () => {
+    const analyst = mockAnalyst();
+    let begin!: () => void, release!: () => void;
+    const started = new Promise<void>((r) => {
+        begin = r;
+      }),
+      gate = new Promise<void>((r) => {
+        release = r;
+      });
+    const original = analyst.research;
+    analyst.research = async (input) => {
+      begin();
+      await gate;
+      return original(input);
+    };
+    const s = await setup(mockQloo(), analyst),
+      w = s.current();
+    const pending = s.change('/research', { intake: allbirdsIntake });
+    await started;
+    await s.store.update(w.id, w.version, (c) => {
+      c.brief.campaign = 'Concurrent edit';
+    });
+    release();
+    expect((await pending).statusCode).toBe(409);
+    const saved = await s.store.get(w.id);
+    expect(saved?.brief.campaign).toBe('Concurrent edit');
+    expect(saved?.research).toBeUndefined();
+  });
+  it('never queries with a strategy that was only analyzed', async () => {
+    const qloo = mockQloo(),
+      w = await researchBrand(newWorkspace().workspace, fixtureIntake, mockAnalyst(), qloo);
+    await expect(runComparison(w, qloo, true)).rejects.toThrow('approve');
+    expect(qloo.insights).not.toHaveBeenCalled();
   });
 });

@@ -15,8 +15,11 @@ or any submitted artifact as part of this app.
   and cannot send their fabricated IDs to Qloo.
 - Secrets stay server-side and out of source control. Production credentials belong
   in this app's Doppler project.
-- This MVP uses a deterministic portfolio solver and bounded Qloo workflow, not an
-  LLM agent. Do not misrepresent its capabilities in a submission.
+- Start with sourced brand research and explicit strategy review before discovery.
+  Gemini analyzes website/brief and partner fit; Qloo supplies cultural evidence.
+  The orchestration and portfolio solver remain bounded and deterministic.
+- Local Vertex reuse from Slate is explicitly authorized. Use the runtime launcher;
+  never persist its credentials or change Slate. See docs/brand-analysis.md.
 
 ## Docs
 

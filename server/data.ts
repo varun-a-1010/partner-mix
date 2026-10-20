@@ -6,7 +6,6 @@ export const sameHash = (a: string, b: string) =>
   a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 export function newWorkspace(demo = false) {
   const secret = randomBytes(32).toString('hex');
-  const today = new Date().toISOString().slice(0, 10);
   const workspace: StoredWorkspace = {
     id: randomUUID(),
     ownerHash: hash(secret),
@@ -15,21 +14,19 @@ export function newWorkspace(demo = false) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     brief: {
-      brand: demo ? 'Fieldwork' : 'Your brand',
-      campaign: demo ? 'Take the long way home' : 'My first campaign',
-      goal: demo
-        ? 'Launch our everyday outdoor collection. Stay credible with outdoor regulars while introducing it to people who discover culture through music.'
-        : 'Introduce our brand to an adjacent audience through a small partnership pilot.',
+      brand: 'Your brand',
+      campaign: 'My campaign',
+      goal: 'Analyze the brand and campaign brief to define the objective.',
       currency: 'INR',
       budget: 500_000,
       reservePercent: 10,
       partnerCount: 2,
       mixedFormats: true,
-      start: demo ? today : '',
-      end: demo ? today : '',
+      start: '',
+      end: '',
       segments: [
-        { id: 'core', name: 'Outdoor regulars', seeds: [] },
-        { id: 'adjacent', name: 'Music explorers', seeds: [] },
+        { id: 'core', name: 'Core direction', seeds: [] },
+        { id: 'adjacent', name: 'Adjacent direction', seeds: [] },
       ],
     },
     candidates: [],

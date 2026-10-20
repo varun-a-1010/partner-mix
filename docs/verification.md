@@ -12,20 +12,19 @@ and reserves, locks, unknowns, exclusivity, date conflicts, stale evidence,
 decision snapshots, quote-driven repair, cookie access, origin checks,
 optimistic concurrency and the provider boundary.
 
-`npm run test:qloo` is opt-in and uses at most ten live requests. It checks
-entity resolution, artist/podcast discovery, comparison of the same shortlist,
-cache reuse, API persistence, selection, locked-partner repair and Markdown
-export. It uses synthetic commercial data and cleans its temporary workspace.
+`test:qloo` and `test:qloo:sample` now exercise brand research, explicit reference
+approval, Qloo discovery, Gemini partner assessment, selection, repair and export.
+They require both providers, use at most 12 Qloo requests and two model generations,
+and remove their temporary workspace. Model results are nondeterministic; missing
+exact reference matches or blocking questions stop the check for review.
 
-`npm run test:qloo:sample` runs the same bounded verification through the actual
-sample-creation route, checking real provider identities/ranks, illustrative
-estimates, unknown availability, refresh, selection, repair and export. Unit/API
-tests also cover incomplete results and failure without partial persistence.
+The expanded suite has 40 tests covering source retrieval/citation rejection,
+truncated output, safe URL validation, approval gates, strategy invalidation,
+strategic exclusions, failures without partial persistence, and concurrent research.
+A standalone real Vertex probe successfully read Allbirds' three official pages.
+The full brand-first live check is pending; the receipts below verify older flows.
 
-On 2026-10-20: all 33 domain/API/provider tests passed. Formatting, TypeScript
-and the production build passed.
-
-## Live Qloo check
+## Historical live Qloo checks
 
 The [sample creation check](evidence/qloo-sample-live-2026-10-20.json) is bound to
 implementation `841544339e5c5227d00e5d2473e46db8fdd8f76c`. Ten requests returned

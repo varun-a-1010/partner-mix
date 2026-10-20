@@ -2,7 +2,11 @@
   "project": "partner-mix",
   "entrypoints": ["src/main.tsx", "server/index.ts"],
   "files": [
-    { "path": "shared/model.ts", "role": "Domain contracts and display helpers", "depends_on": [] },
+    {
+      "path": "shared/model.ts",
+      "role": "Domain contracts and display helpers",
+      "depends_on": []
+    },
     {
       "path": "shared/validation.ts",
       "role": "Request constraints",
@@ -15,8 +19,8 @@
     },
     {
       "path": "server/sample.ts",
-      "role": "Real Qloo sample with explicitly illustrative commercial inputs",
-      "depends_on": ["shared/model.ts", "server/qloo.ts", "server/workflow.ts"]
+      "role": "Real-brand hypothetical brief and explicitly illustrative cost inputs",
+      "depends_on": ["shared/model.ts", "shared/brand.ts"]
     },
     {
       "path": "server/store.ts",
@@ -46,13 +50,15 @@
         "server/qloo.ts",
         "server/workflow.ts",
         "server/solver.ts",
-        "server/sample.ts"
+        "server/sample.ts",
+        "server/brand-workflow.ts",
+        "server/brand-analyst.ts"
       ]
     },
     {
       "path": "src/App.tsx",
       "role": "Campaign navigation and mutations",
-      "depends_on": ["src/api.ts", "src/forms.tsx", "src/views.tsx"]
+      "depends_on": ["src/api.ts", "src/forms.tsx", "src/views.tsx", "src/brand.tsx"]
     },
     {
       "path": "src/forms.tsx",
@@ -68,6 +74,31 @@
       "path": "scripts/test-qloo-live.ts",
       "role": "Opt-in bounded real API verification",
       "depends_on": ["server/qloo.ts", "server/app.ts"]
+    },
+    {
+      "path": "shared/brand.ts",
+      "role": "Brand intake, research, assessment and approval contracts",
+      "depends_on": ["shared/model.ts"]
+    },
+    {
+      "path": "server/brand-analyst.ts",
+      "role": "Vertex Gemini URL-context research and structured partner assessment",
+      "depends_on": ["shared/brand.ts", "server/store.ts"]
+    },
+    {
+      "path": "server/brand-workflow.ts",
+      "role": "Resolve proposed references and approve a source-bound strategy",
+      "depends_on": ["server/brand-analyst.ts", "server/qloo.ts", "shared/brand.ts"]
+    },
+    {
+      "path": "src/brand.tsx",
+      "role": "Website/brief intake, review, corrections, approval and partner case",
+      "depends_on": ["shared/brand.ts", "src/forms.tsx"]
+    },
+    {
+      "path": "scripts/with-slate-vertex.mjs",
+      "role": "Authorized local Vertex runtime launcher; no persistent credentials",
+      "depends_on": []
     }
   ]
 }

@@ -1,9 +1,9 @@
 # Partner Mix
 
-A separate Qloo hackathon prototype for planning a campaign's combination of
-artists and podcasts. Start with two audience hypotheses, discover or enter
-partners, record offers, compare feasible packages, and revise a chosen mix while
-preserving locked partners.
+A campaign planning studio for a brand partnerships manager. Start with the
+brand’s website and campaign brief, review its positioning and proposed search
+directions, then investigate music artists and podcasts. Compare affordable
+partner combinations and export a defensible proposal with unresolved questions.
 
 ## Run locally
 
@@ -11,53 +11,52 @@ Requires Node 22.12 or newer.
 
 ```sh
 npm ci
-npm run dev
+node scripts/with-slate-vertex.mjs npm run dev
 ```
 
-Open [Partner Mix](http://127.0.0.1:5193). The API uses port 3193. Use **Explore the
-Qloo sample** for a campaign with real artists, podcasts and Qloo rankings;
-**Plan a campaign** starts an empty workspace. An open campaign also has an
-**Open Qloo sample** button in its sidebar.
+The launcher retrieves only the three explicitly authorized Vertex settings from
+Doppler `slate/dev_mac`, into child-process memory. It never writes credentials.
+`QLOO_API_KEY` must also be present in the API process environment. Production
+should use app-owned credentials. No credentials are bundled into the client.
 
-`QLOO_API_KEY` is read only by the API process. Supply it through this app's runtime
-environment, normally its own Doppler project. No credential is bundled into the
-client. New samples require a connection. Without a key, empty campaigns and
-manual offers still work, and saved samples remain readable.
+Open [Partner Mix](http://127.0.0.1:5193). The API uses port 3193. Choose **Open
+Allbirds sample** in an existing campaign, or **Explore an Allbirds campaign**
+on the home screen. Sample creation is offline; research and discovery happen
+only when requested. Both provider connections are needed for the full flow.
 
-Campaigns are stored as private files under ignored `.data/`. An HttpOnly cookie
-grants access to each campaign in this browser. The recent-campaign list contains
-IDs and titles, not credentials. Clearing browser cookies removes browser access.
-Export a decision brief when you need a portable record.
+## Try the full flow
 
-## Try the repair flow
+1. Open the Allbirds sample: a real brand with a hypothetical US city-walking campaign.
+2. Click **Understand this brand**. Gemini reads the supplied official pages and
+   analyzes the brief. Review facts, sources, hypotheses, unknowns and questions.
+3. Correct the understanding if needed. Confirm Qloo identities for the proposed
+   cultural references, then **Approve understanding & directions**.
+4. **Discover & assess partners**. Qloo supplies actual identities and cultural
+   ranks; Gemini assesses the campaign role, activation and concerns for each.
+5. Review **Budget & timing** and **Partners & offers**, then **Compare mixes**.
+   Sample costs are illustrative estimates, and availability is unknown.
+6. Choose a mix. Lock one partner and mark another unavailable to try repair.
+7. Open **Decision brief** for the original strategy, partner rationale, remaining
+   confirmations and a Markdown export.
 
-1. Open the Qloo sample and choose a mix.
-2. In **Partners & offers**, keep one of its partners in every mix.
-3. Mark the other selected partner unavailable.
-4. Return to **Compare mixes** and choose an updated option.
-5. Open **Decision brief** to see the retained/replaced partners and cost change.
-
-The sample resolves Patagonia and Daft Punk as audience references, discovers
-up to eight real partners, and compares that shortlist through Qloo. Its campaign,
-cost estimates and activation ideas are illustrative. Availability starts
-unconfirmed. Qloo discovery never supplies prices or confirms commercial availability.
-Older fictional samples remain labelled and offer a button to open a new real one.
+Campaigns are private files in ignored `.data/`, accessed with a scoped HttpOnly
+cookie. Clearing cookies removes that browser’s access. Existing campaigns and
+decisions are preserved, but new recommendations require reviewed brand research.
 
 ## Checks
 
 ```sh
 npm run check
-npm run test:qloo
-npm run test:qloo:sample
+node scripts/with-slate-vertex.mjs npm run test:qloo:sample
 ```
 
-The first command runs formatting, unit/API tests, type checking and the
-production build. Both opt-in live checks need `QLOO_API_KEY`, make at most ten
-upstream calls each, use synthetic commercial inputs, and remove their temporary
-workspace. They print only sanitized evidence. The sample check exercises the
-same sample-creation API used by the UI.
+The local check runs formatting, tests, types and production build. The opt-in
+live script needs Qloo and Vertex, uses at most 12 Qloo requests and two model
+generations, exercises the same API flow, and removes its temporary workspace.
+It prints sanitized evidence. `test:qloo` uses an empty campaign with the same
+hypothetical brief and synthetic costs instead.
 
-This MVP uses a deterministic portfolio solver and bounded Qloo workflow. It does
-not yet include an LLM planning agent, contract negotiation, outreach delivery,
-audience measurement, bookings, a hosted deployment or a Devpost submission.
-See [the docs](docs/index.md).
+Gemini interpretations need review; URL retrieval does not prove every generated
+claim. Qloo affinity is not verified audience reach, rates, willingness or brand
+alignment. No outreach, bookings, contracts, hosted deployment or Devpost submission
+is performed. See [the docs](docs/index.md).

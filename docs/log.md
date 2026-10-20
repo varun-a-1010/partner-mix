@@ -2,6 +2,16 @@
 
 ## 2026-10-20
 
+- Rebuilt the entry flow around the brand website and campaign brief, sourced
+  Gemini understanding, explicit review and Qloo reference confirmation. Replaced
+  fictional brand context with Allbirds and a hypothetical city-walking campaign.
+- Added per-partner strategic roles, activation hypotheses and concerns; held,
+  poor-fit and stale/unassessed partners are excluded from mixes. Decision snapshots
+  and exports now preserve their brand research. Added regression coverage.
+- Connected Vertex using the explicitly authorized Slate default project through a
+  memory-only launcher. No Slate files or database were changed. Verified official
+  Allbirds page retrieval; the full revised live flow is pending verification.
+
 - Verified the real sample on `8415443`: all ten Qloo requests returned HTTP 200,
   with four real artists, four real podcasts and complete comparisons. Refresh
   cache reuse, locked-partner repair and export passed. All 33 tests, formatting,

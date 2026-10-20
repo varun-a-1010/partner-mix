@@ -33,7 +33,8 @@ no-referrer, nosniff and frame denial. No request logger is enabled.
 ## Solver
 
 Enumerate combinations of exactly the requested count (at most 24 choose 3).
-Filter excluded/unavailable partners, unknown prices, known date conflicts,
+Require an approved brand strategy. Filter unassessed, held or poor-fit partners,
+then excluded/unavailable partners, unknown prices, known date conflicts,
 format requirements, all locks, mutually exclusive groups, and reserve-adjusted
 budget. Do not silently unlock partners when no solution exists.
 
@@ -56,16 +57,21 @@ Changed references or shortlist identities do.
 
 ## Async work and revisions
 
-Qloo requests happen outside the storage queue. At most one comparison per
+Qloo and Gemini requests happen outside the storage queue. At most one research or comparison per
 workspace runs at a time. Save only after the original version is rechecked.
 Failure or a concurrent edit discards the whole pending result.
 
-Sample creation resolves its references and builds the entire Qloo shortlist
-before saving a workspace or issuing its capability cookie. It records
-`sample.source: qloo` and a generation timestamp, with real provider evidence
-and explicitly illustrative commercial inputs. Legacy samples remain unchanged;
-their missing marker identifies fictional data that cannot enter live queries.
+Sample creation saves only a real-brand website and hypothetical brief, with
+`sample.scenario: allbirds-walking`. Research creates a new source-bound strategy;
+explicit approval records chosen Qloo references. Discovery and assessment save
+atomically. New sample candidates get labelled illustrative estimates. Old sample
+records are not rewritten; fabricated entity IDs still cannot enter live queries.
 
-A chosen decision snapshots its brief, partners, evidence and package. Later
+Brand research stores the exact intake binding, source URLs, model/date, questions,
+directions, Qloo match candidates and approval. Changing references removes old
+partner assessments; re-analysis changes the strategy identity. The solver refuses
+assessment identities that do not match. No LLM can accept an offer or change a lock.
+
+A chosen decision snapshots its intake, reviewed research, brief, partners, evidence and package. Later
 changes set `selectionStale` through an input fingerprint. Reselecting preserves
 the immediately previous snapshot and a before/after receipt.

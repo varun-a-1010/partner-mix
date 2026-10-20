@@ -8,6 +8,7 @@ import type {
   Workspace,
 } from '../shared/model';
 import { money, sampleDescription, strategyNames } from '../shared/model';
+import { brandReady } from '../shared/brand';
 
 const digest = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 export function evidenceFingerprint(w: Workspace) {
@@ -22,13 +23,25 @@ export function evidenceFingerprint(w: Workspace) {
   });
 }
 export function inputFingerprint(w: Workspace) {
-  return digest({ brief: w.brief, candidates: w.candidates, evidence: w.evidence });
+  return digest({
+    brief: w.brief,
+    intake: w.intake,
+    research: w.research,
+    candidates: w.candidates,
+    evidence: w.evidence,
+  });
 }
 export const spendLimit = (w: Workspace) =>
   Math.floor((w.brief.budget * (100 - w.brief.reservePercent)) / 100);
 
 function reason(c: Candidate, w: Workspace): string | undefined {
   if (c.excluded) return 'Excluded from this campaign.';
+  if (w.research && (!c.assessment || c.assessment.researchId !== w.research.id))
+    return 'Assess this partner against the current brand strategy before including them.';
+  if (c.assessment?.disposition === 'poor-fit')
+    return 'The available evidence indicates a weak fit for this campaign.';
+  if (c.assessment?.disposition === 'hold')
+    return 'Strategic fit needs more evidence before this partner enters a proposed mix.';
   if (c.offer.availability === 'unavailable') return 'Marked unavailable.';
   if (c.offer.amount === null) return 'Add an estimate or quote before costing a package.';
   if (
@@ -91,6 +104,7 @@ function makePackage(partners: Candidate[], w: Workspace, qs: Comparison[]): Pac
   const total = partners.reduce((n, c) => n + c.offer.amount!, 0);
   const coverage = bestCoverage(partners, qs, w);
   const unresolved = partners.flatMap((c) => [
+    ...(c.assessment?.concerns.map((s) => `${c.name}: ${s}`) ?? []),
     ...(c.offer.basis === 'estimate' ? [`${c.name}: obtain a written quote.`] : []),
     ...(!c.offer.deliverables ? [`${c.name}: agree deliverables and usage rights.`] : []),
     ...(c.offer.availability === 'unknown'
@@ -103,6 +117,11 @@ function makePackage(partners: Candidate[], w: Workspace, qs: Comparison[]): Pac
     const name = partners.find((p) => p.id === c.candidateId)!.name;
     return `${name} contributes the strongest relative evidence in this mix for ${c.name}: #${c.rank} of ${c.of} ${c.kind === 'artist' ? 'artists' : 'podcasts'} compared.`;
   });
+  rationale.unshift(
+    ...partners.flatMap((c) =>
+      c.assessment ? [`${c.name}: ${c.assessment.role}. ${c.assessment.rationale}`] : [],
+    ),
+  );
   return {
     id: digest(partners.map((c) => c.id).sort()).slice(0, 20),
     strategy: 'balanced',
@@ -123,6 +142,8 @@ export function solve(w: Workspace): Planning {
   const eligible = w.candidates.filter((c) => !excluded.some((e) => e.id === c.id));
   const locked = w.candidates.filter((c) => c.locked);
   const blockers: string[] = [];
+  if (!brandReady(w))
+    blockers.push('Review the brand understanding and approve its partnership directions first.');
   for (const c of locked) {
     const problem = excluded.find((e) => e.id === c.id);
     if (problem) blockers.push(`Locked partner ${c.name}: ${problem.reason}`);
@@ -232,7 +253,14 @@ export function solve(w: Workspace): Planning {
 export function exportBrief(w: Workspace): string {
   const p = w.selection?.package;
   const stale = !!w.selection && w.selection.inputFingerprint !== inputFingerprint(w);
-  if (w.selection) w = { ...w, brief: w.selection.brief, evidence: w.selection.evidence };
+  if (w.selection)
+    w = {
+      ...w,
+      brief: w.selection.brief,
+      evidence: w.selection.evidence,
+      research: w.selection.research,
+      intake: w.selection.intake,
+    };
   const lines = [
     `# ${w.brief.campaign}`,
     '',
@@ -242,6 +270,25 @@ export function exportBrief(w: Workspace): string {
     `Goal: ${w.brief.goal}`,
     `Dates: ${w.brief.start || 'Not set'} to ${w.brief.end || 'Not set'}`,
     `Budget: ${money(w.brief.budget, w.brief.currency)}; ${w.brief.reservePercent}% reserved.`,
+    '',
+    '## Brand understanding and campaign strategy',
+    '',
+    ...(w.research
+      ? [
+          `Website: ${w.intake?.website ?? 'Not supplied'}`,
+          w.research.analysis.summary,
+          ...w.research.analysis.facts.map(
+            (f) =>
+              `- ${f.topic} (${f.basis}): ${f.statement}${f.sources.length ? ` Sources: ${f.sources.join(', ')}` : ''}`,
+          ),
+          `Success measure: ${w.research.analysis.successMeasure}`,
+          ...w.research.analysis.directions.map(
+            (d) => `- ${d.title}: ${d.rationale} Activation hypothesis: ${d.activation}`,
+          ),
+          ...w.research.analysis.guardrails.map((g) => `- Guardrail: ${g}`),
+          `Research: ${w.research.model}, ${w.research.createdAt}. Reviewed: ${w.research.approved?.at ?? 'Not reviewed'}.`,
+        ]
+      : ['No reviewed brand research.']),
     '',
     '## Decision',
     '',
@@ -257,6 +304,14 @@ export function exportBrief(w: Workspace): string {
         `Source: ${c.offer.source || 'Not supplied'}`,
         `Deliverables: ${c.offer.deliverables || 'To be agreed'}`,
         `Availability: ${c.offer.availability}; ${c.offer.from || 'dates unknown'} – ${c.offer.until || 'dates unknown'}`,
+        ...(c.assessment
+          ? [
+              `Campaign role: ${c.assessment.role}`,
+              `Strategic hypothesis: ${c.assessment.rationale}`,
+              `Activation hypothesis: ${c.assessment.activation}`,
+              ...c.assessment.concerns.map((s) => `- Verify: ${s}`),
+            ]
+          : []),
         '',
       );
     }

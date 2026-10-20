@@ -11,6 +11,8 @@ export function legacyWorkspace() {
 }
 
 function seedDemo(w: StoredWorkspace) {
+  w.brief.start = '2026-11-01';
+  w.brief.end = '2026-11-30';
   const rows: [string, Candidate['kind'], number, number, number, string][] = [
     ['Trail Notes', 'podcast', 140_000, 1, 4, 'One hosted episode and two newsletter placements'],
     [

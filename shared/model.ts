@@ -1,3 +1,4 @@
+import type { BrandIntake, BrandResearch, PartnerAssessment } from './brand';
 export const seedKinds = ['brand', 'artist', 'podcast', 'movie', 'book'] as const;
 export type SeedKind = (typeof seedKinds)[number];
 export type PartnerKind = 'artist' | 'podcast';
@@ -41,6 +42,7 @@ export type Candidate = {
   offer: Offer;
   locked: boolean;
   excluded: boolean;
+  assessment?: PartnerAssessment;
 };
 export type Comparison = {
   id: string;
@@ -91,6 +93,8 @@ export type Selection = {
   partners: Candidate[];
   brief: Brief;
   evidence?: Evidence;
+  research?: BrandResearch;
+  intake?: BrandIntake;
   chosenAt: string;
   inputFingerprint: string;
 };
@@ -107,7 +111,9 @@ export type Workspace = {
   createdAt: string;
   updatedAt: string;
   demo: boolean;
-  sample?: { source: 'qloo'; generatedAt: string };
+  sample?: { source: 'qloo'; generatedAt: string; scenario?: 'allbirds-walking' };
+  intake?: BrandIntake;
+  research?: BrandResearch;
   brief: Brief;
   candidates: Candidate[];
   evidence?: Evidence;
@@ -120,12 +126,15 @@ export type WorkspaceView = Workspace & {
   planning: Planning;
   selectionStale: boolean;
   provider: 'configured' | 'not-connected';
+  analyst: 'configured' | 'not-connected';
 };
 export const isLegacySample = (w: Workspace) => w.demo && w.sample?.source !== 'qloo';
 export const sampleDescription = (w: Workspace) =>
   isLegacySample(w)
     ? 'Fictional sample campaign. Partners, offers and rankings are illustrative.'
-    : 'Real artists, podcasts and cultural rankings from Qloo. The campaign, costs and activation ideas are illustrative; availability is unconfirmed.';
+    : w.sample?.scenario === 'allbirds-walking'
+      ? 'Allbirds is a real brand. This is an independent, hypothetical campaign. Review sourced brand research before discovering real partners. Example costs and activation ideas are illustrative; availability is unconfirmed.'
+      : 'Older sample with illustrative brand and commercial inputs. Complete the brand research or open the new Allbirds example.';
 export const emptyOffer = (): Offer => ({
   amount: null,
   basis: 'estimate',

@@ -8,6 +8,7 @@ import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
 import type { Qloo } from '../server/qloo';
 import { legacyWorkspace } from './legacy-fixture';
+import { attachTestStrategy, mockAnalyst } from './brand-fixture';
 
 const cleanups: (() => Promise<unknown>)[] = [];
 afterEach(async () => {
@@ -17,7 +18,7 @@ async function setup(qloo?: Qloo) {
   const dir = await mkdtemp(join(tmpdir(), 'partner-mix-test-'));
   cleanups.push(() => rm(dir, { recursive: true, force: true }));
   const store = new FileStore(dir),
-    app = await buildApp(store, { qloo });
+    app = await buildApp(store, { qloo, analyst: mockAnalyst() });
   cleanups.push(() => app.close());
   const headers = { host: 'localhost:5193', origin: 'http://localhost:5193' };
   const created = await app.inject({
@@ -28,6 +29,7 @@ async function setup(qloo?: Qloo) {
   });
   const original = (await store.get(created.json<WorkspaceView>().id))!;
   const fixture = legacyWorkspace().workspace;
+  attachTestStrategy(fixture);
   await store.create({ ...fixture, id: original.id, ownerHash: original.ownerHash });
   const cookie = created.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
   const w = (

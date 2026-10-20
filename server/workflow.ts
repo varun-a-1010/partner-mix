@@ -4,6 +4,7 @@ import { emptyOffer, isLegacySample } from '../shared/model';
 import { AppError } from './store';
 import type { Qloo } from './qloo';
 import { evidenceFingerprint } from './solver';
+import { brandReady } from '../shared/brand';
 
 export async function runComparison(
   w: StoredWorkspace,
@@ -15,6 +16,11 @@ export async function runComparison(
     throw new AppError(
       400,
       'This older sample has fictional entities. Open a new Qloo sample to use real partners.',
+    );
+  if (!brandReady(w))
+    throw new AppError(
+      422,
+      'Review the brand understanding and approve its partnership directions before discovering partners.',
     );
   if (w.brief.segments.some((s) => !s.seeds.length))
     throw new AppError(422, 'Add at least one confirmed taste reference for each group.');

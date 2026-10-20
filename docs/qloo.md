@@ -18,8 +18,8 @@ credential-scoped process-local cache (80 entries, ten minutes). It does not ret
   each response, then are discarded.
 
 One refresh makes at most four calls (two reference groups × two formats).
-Discovery plus comparison makes at most eight, two concurrent at a time. Search
-is a separate explicit action. The adapter never receives campaign name, goal,
+Discovery plus comparison makes at most eight, two concurrent at a time. Brand research resolves up to four proposed references through search; manual
+search is also available. The adapter never receives campaign name, goal,
 offers, budget, contact details or commercial notes.
 
 The result records query ID, input IDs, timestamp, candidate set, ranks, and
@@ -27,16 +27,18 @@ contributing seed IDs actually returned by Qloo. Query IDs are local provenance
 identifiers, not vendor request IDs. Missing contributor metadata is labelled
 unavailable; no explanation is invented.
 
-New samples resolve the known Patagonia brand and Daft Punk artist IDs through
-search, then run discovery and comparison. Each group contributes its first two
-artists and podcasts to a deduplicated shortlist of up to eight. Four comparisons
-rank that same shortlist. Creation uses at most ten calls, including the two
-searches, before cache reuse. No identities or rankings are fabricated.
+The Allbirds sample starts from official website URLs and a hypothetical brief,
+not preset taste references. Gemini proposes references; Qloo resolves them, and the
+planner confirms the identities. Each approved direction contributes its first two
+artists and podcasts to a deduplicated sample shortlist of up to eight. Normal
+campaign discovery can return up to 24. Four comparisons rank the same shortlist.
+The complete first flow uses at most 12 Qloo requests (four searches plus eight
+insight calls), before cache reuse.
 
-Sample commercial estimates and activation concepts are explicitly illustrative;
-availability is unknown. Samples can refresh comparisons and edit real references.
-If Qloo is unavailable, creation fails without a saved partial workspace or a
-fictional fallback. Existing saved samples remain accessible.
+Sample cost estimates are illustrative and availability is unknown. Gemini then
+assesses campaign-specific creative fit independently of Qloo's cultural rank.
+A failed comparison or assessment does not partially replace the saved shortlist.
+Existing saved campaigns remain readable when providers are disconnected.
 
 Legacy samples without `sample.source: qloo` retain their fictional data and
 labels. Their synthetic IDs are still blocked from live search/comparison and

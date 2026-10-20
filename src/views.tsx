@@ -2,6 +2,8 @@ import { Check, Download, LockKeyhole, RefreshCw } from 'lucide-react';
 import type { Candidate, WorkspaceView } from '../shared/model';
 import { isLegacySample, money } from '../shared/model';
 import { PartnerIcon, type Mutate } from './forms';
+import { brandReady } from '../shared/brand';
+import { PartnerCase } from './brand';
 
 function nameOf(w: WorkspaceView, id: string) {
   return (
@@ -150,7 +152,7 @@ export function ComparisonBoard({
         </div>
         <button
           className="secondary"
-          disabled={isLegacySample(w) || w.provider !== 'configured'}
+          disabled={!brandReady(w) || isLegacySample(w) || w.provider !== 'configured'}
           onClick={compare}
         >
           <RefreshCw size={16} /> Refresh Qloo comparison
@@ -249,6 +251,18 @@ export function ComparisonBoard({
                 })}
               </div>
               <div className="fit-notes">
+                {p.partnerIds.map((id) => {
+                  const candidate = w.candidates.find((c) => c.id === id)!;
+                  return (
+                    <p key={id}>
+                      <span>
+                        <strong>{candidate.name}</strong>
+                        <br />
+                        {candidate.assessment?.role}
+                      </span>
+                    </p>
+                  );
+                })}
                 {p.coverage.map((c) => (
                   <p key={c.segment}>
                     <span className={`group-marker ${c.segment}`} />
@@ -398,6 +412,27 @@ export function Decision({
           <strong>{money(p.total, brief.currency)}</strong>
           <small>{w.demo ? 'Illustrative partner costs' : 'Entered partner costs'}</small>
         </div>
+        {selection.research && (
+          <div className="decision-strategy">
+            <h4>The brand and campaign</h4>
+            <p>{selection.research.analysis.summary}</p>
+            <p>
+              <strong>Success measure:</strong> {selection.research.analysis.successMeasure}
+            </p>
+            <ul>
+              {selection.research.analysis.guardrails.map((g) => (
+                <li key={g}>{g}</li>
+              ))}
+            </ul>
+            {selection.research.sources.map((s) => (
+              <p key={s.url}>
+                <a href={s.url} target="_blank" rel="noreferrer">
+                  {s.url}
+                </a>
+              </p>
+            ))}
+          </div>
+        )}
         <h4>The chosen partners</h4>
         {selection.partners.map((c: Candidate) => (
           <div className="decision-partner" key={c.id}>
@@ -411,6 +446,7 @@ export function Decision({
                   ? `Available ${c.offer.from} to ${c.offer.until}`
                   : `Availability ${c.offer.availability}`}
               </small>
+              <PartnerCase candidate={c} researchId={selection.research?.id} />
             </div>
             <button className="text-button" onClick={() => edit(c.id)}>
               Review offer
