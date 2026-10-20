@@ -27,6 +27,20 @@ and the production build passed.
 
 ## Live Qloo check
 
+The [sample creation check](evidence/qloo-sample-live-2026-10-20.json) is bound to
+implementation `841544339e5c5227d00e5d2473e46db8fdd8f76c`. Ten requests returned
+HTTP 200 (247–3654 ms). The actual sample API discovered four artists (Bahamas,
+The Head and the Heart, Justice, deadmau5) and four podcasts (The Rich Roll Podcast,
+The Tim Ferriss Show, Song Exploder, 99% Invisible). Each of the four comparisons
+returned all four requested partners of its type.
+
+The sample's initial costs were explicitly illustrative estimates and every
+partner's availability was unknown. Refresh reused cached results without another
+upstream request. Selection chose Bahamas + Song Exploder; after locking Bahamas
+and marking Song Exploder unavailable in the test, repair chose Bahamas +
+99% Invisible. Authenticated export retained the real-Qloo/sample-cost distinction.
+The temporary workspace was removed; the user's existing campaigns were untouched.
+
 [Sanitized evidence](evidence/qloo-live-2026-10-20.json) is bound to implementation
 commit `8d09568f6b56b4c5fea9b9ff835d0778ff4ca51b`. Ten upstream requests all returned
 HTTP 200 (229–3567 ms):

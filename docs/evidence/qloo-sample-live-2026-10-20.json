@@ -1,0 +1,255 @@
+{
+  "at": "2026-10-20T13:51:03.035Z",
+  "sourceSha": "841544339e5c5227d00e5d2473e46db8fdd8f76c",
+  "flow": "Real Qloo sample creation",
+  "upstreamCalls": 10,
+  "calls": [
+    {
+      "path": "/search",
+      "kind": "urn:entity:brand",
+      "status": 200,
+      "ms": 942
+    },
+    {
+      "path": "/search",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 247
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 1005
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 3504
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 599
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 3654
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 269
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 308
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:artist",
+      "status": 200,
+      "ms": 254
+    },
+    {
+      "path": "/v2/insights",
+      "kind": "urn:entity:podcast",
+      "status": 200,
+      "ms": 268
+    }
+  ],
+  "inputEntities": [
+    {
+      "name": "Patagonia",
+      "kind": "brand",
+      "entityId": "DB4CE34E-3A63-4947-946F-9D52502C5762"
+    },
+    {
+      "name": "Daft Punk",
+      "kind": "artist",
+      "entityId": "012EF80C-B187-4ECB-9C3D-9CA5228B503C"
+    }
+  ],
+  "discovered": {
+    "artists": 4,
+    "podcasts": 4
+  },
+  "sampleProvenance": {
+    "source": "qloo",
+    "generatedAt": "2026-10-20T13:51:03.017Z"
+  },
+  "partners": [
+    {
+      "name": "Bahamas",
+      "kind": "artist",
+      "entityId": "C8543090-A342-4C40-80F9-1577454B9FF4"
+    },
+    {
+      "name": "The Head and the Heart",
+      "kind": "artist",
+      "entityId": "F91F4E13-923B-4DD9-AB11-CCF6FA6BCE03"
+    },
+    {
+      "name": "The Rich Roll Podcast",
+      "kind": "podcast",
+      "entityId": "C752CB19-BA38-4911-AB63-EADACE2DEEED"
+    },
+    {
+      "name": "The Tim Ferriss Show",
+      "kind": "podcast",
+      "entityId": "70EC9849-ADC9-4319-AF32-E60762AF012A"
+    },
+    {
+      "name": "Justice",
+      "kind": "artist",
+      "entityId": "066EBC51-DB40-4F86-A121-1D2B625D9185"
+    },
+    {
+      "name": "deadmau5",
+      "kind": "artist",
+      "entityId": "4493B465-A9F3-48BB-BD1C-2E1A691A35A0"
+    },
+    {
+      "name": "Song Exploder",
+      "kind": "podcast",
+      "entityId": "D95B20A8-0CEA-4BDC-8074-60A303FA1980"
+    },
+    {
+      "name": "99% Invisible",
+      "kind": "podcast",
+      "entityId": "1B466B0E-323A-4EFD-A314-8737F58F1E1B"
+    }
+  ],
+  "initialAvailabilityUnknown": true,
+  "sampleCostsExplicitlyIllustrative": true,
+  "comparisons": [
+    {
+      "segment": "core",
+      "kind": "artist",
+      "returned": 4,
+      "requested": 4,
+      "ranks": [
+        {
+          "name": "Bahamas",
+          "rank": 1
+        },
+        {
+          "name": "The Head and the Heart",
+          "rank": 2
+        },
+        {
+          "name": "deadmau5",
+          "rank": 3
+        },
+        {
+          "name": "Justice",
+          "rank": 4
+        }
+      ]
+    },
+    {
+      "segment": "core",
+      "kind": "podcast",
+      "returned": 4,
+      "requested": 4,
+      "ranks": [
+        {
+          "name": "The Rich Roll Podcast",
+          "rank": 1
+        },
+        {
+          "name": "The Tim Ferriss Show",
+          "rank": 2
+        },
+        {
+          "name": "Song Exploder",
+          "rank": 3
+        },
+        {
+          "name": "99% Invisible",
+          "rank": 4
+        }
+      ]
+    },
+    {
+      "segment": "adjacent",
+      "kind": "artist",
+      "returned": 4,
+      "requested": 4,
+      "ranks": [
+        {
+          "name": "Justice",
+          "rank": 1
+        },
+        {
+          "name": "deadmau5",
+          "rank": 2
+        },
+        {
+          "name": "The Head and the Heart",
+          "rank": 3
+        },
+        {
+          "name": "Bahamas",
+          "rank": 4
+        }
+      ]
+    },
+    {
+      "segment": "adjacent",
+      "kind": "podcast",
+      "returned": 4,
+      "requested": 4,
+      "ranks": [
+        {
+          "name": "Song Exploder",
+          "rank": 1
+        },
+        {
+          "name": "99% Invisible",
+          "rank": 2
+        },
+        {
+          "name": "The Tim Ferriss Show",
+          "rank": 3
+        },
+        {
+          "name": "The Rich Roll Podcast",
+          "rank": 4
+        }
+      ]
+    }
+  ],
+  "evidenceStatus": "current",
+  "firstMix": [
+    {
+      "name": "Bahamas",
+      "kind": "artist",
+      "entityId": "C8543090-A342-4C40-80F9-1577454B9FF4"
+    },
+    {
+      "name": "Song Exploder",
+      "kind": "podcast",
+      "entityId": "D95B20A8-0CEA-4BDC-8074-60A303FA1980"
+    }
+  ],
+  "repair": {
+    "kept": "Bahamas",
+    "replaced": "Song Exploder",
+    "newMix": [
+      "Bahamas",
+      "99% Invisible"
+    ]
+  },
+  "cacheReused": true,
+  "privateApiAndExportChecked": true,
+  "commercialInputs": "All prices, deliverables, availability changes and budget are synthetic. No real offer or marketing outcome is claimed.",
+  "cleanup": "Temporary workspace removed in finally; no demo data inserted into the user store."
+}

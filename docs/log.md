@@ -2,6 +2,10 @@
 
 ## 2026-10-20
 
+- Verified the real sample on `8415443`: all ten Qloo requests returned HTTP 200,
+  with four real artists, four real podcasts and complete comparisons. Refresh
+  cache reuse, locked-partner repair and export passed. All 33 tests, formatting,
+  types and production build passed.
 - Replaced new fictional samples with live Qloo discovery and comparison from
   Patagonia/Daft Punk references. Sample costs and activation ideas remain
   illustrative, and availability starts unknown. Existing samples are preserved
