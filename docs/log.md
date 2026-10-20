@@ -2,6 +2,11 @@
 
 ## 2026-10-20
 
+- Fixed Vertex HTTP 400 rejection of the nested assessment schema by simplifying
+  the generation schema while retaining strict output validation. A live isolated
+  assessment then succeeded. Restricted the analyst to creative/editorial fit;
+  commercial and audience facts stay explicit independent confirmations.
+
 - Tightened the distinction between essential brief questions and later due diligence,
   made the hypothetical sample geography/timing/conversion definition explicit,
   and added credential-free model-stage diagnostics for the opt-in live check.

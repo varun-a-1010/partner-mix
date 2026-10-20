@@ -72,14 +72,42 @@ describe('grounded brand analysis', () => {
     const w = legacyWorkspace().workspace,
       research = researchFixture();
     const analyst = createBrandAnalyst({ generate: async () => response({ partners: [] }) });
-    await expect(analyst.assess(research, w.candidates, w.evidence!)).rejects.toThrow(
-      'cover the shortlist',
-    );
+    await expect(
+      analyst.assess(research, w.candidates, w.evidence!, fixtureIntake),
+    ).rejects.toThrow('cover the shortlist');
   });
   it('does not accept truncated model output', async () => {
     const r = response(analysisFixture());
     r.candidates![0].finishReason = FinishReason.MAX_TOKENS;
     const analyst = createBrandAnalyst({ generate: async () => r });
     await expect(analyst.research(fixtureIntake)).rejects.toThrow('could not finish');
+  });
+  it('keeps response bounds enforced locally with the simpler Vertex generation schema', async () => {
+    const w = legacyWorkspace().workspace;
+    let sentSchema: unknown;
+    const analyst = createBrandAnalyst({
+      generate: async (request) => {
+        sentSchema = request.config?.responseJsonSchema;
+        return response({
+          partners: [
+            {
+              candidateId: w.candidates[0].id,
+              disposition: 'investigate',
+              role: 'x'.repeat(901),
+              rationale: 'A creative hypothesis.',
+              activation: 'An example.',
+              concerns: ['Verify editorial fit.'],
+              sourceUrls: [],
+            },
+          ],
+        });
+      },
+    });
+    await expect(
+      analyst.assess(researchFixture(), [w.candidates[0]], w.evidence!, fixtureIntake),
+    ).rejects.toThrow('assessment could not finish');
+    expect(JSON.stringify(sentSchema)).not.toContain('maxLength');
+    expect(JSON.stringify(sentSchema)).not.toContain('maxItems');
+    expect(JSON.stringify(sentSchema)).toContain('required');
   });
 });

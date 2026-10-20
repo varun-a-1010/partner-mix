@@ -105,6 +105,7 @@ function makePackage(partners: Candidate[], w: Workspace, qs: Comparison[]): Pac
   const coverage = bestCoverage(partners, qs, w);
   const unresolved = partners.flatMap((c) => [
     ...(c.assessment?.concerns.map((s) => `${c.name}: ${s}`) ?? []),
+    `${c.name}: verify target-audience evidence and usage rights independently.`,
     ...(c.offer.basis === 'estimate' ? [`${c.name}: obtain a written quote.`] : []),
     ...(!c.offer.deliverables ? [`${c.name}: agree deliverables and usage rights.`] : []),
     ...(c.offer.availability === 'unknown'

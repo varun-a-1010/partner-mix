@@ -293,11 +293,14 @@ export async function buildApp(
           result.research!,
           result.candidates,
           result.evidence!,
+          result.intake!,
         );
         for (const c of result.candidates)
           c.assessment = assessments.find((a) => a.candidateId === c.id);
         result.run!.steps.push(
           'Assessed each partner against the reviewed brand, campaign objective and guardrails. Strategic fit remains a hypothesis, separate from Qloo affinity.',
+          'Filtered unassessed, held and poor-fit partners; applied entered budget, availability, format, exclusivity and lock constraints.',
+          'Prepared distinct packages where the entered offers and current evidence allow them.',
         );
         return view(
           await store.update(w.id, version, (current) => {

@@ -105,11 +105,7 @@ export async function runComparison(
   };
   next.run = {
     at: new Date().toISOString(),
-    steps: [
-      ...steps,
-      'Applied budget, availability, format, exclusivity and lock constraints.',
-      'Prepared distinct packages where the available offers and evidence allow them.',
-    ],
+    steps,
   };
   return next;
 }

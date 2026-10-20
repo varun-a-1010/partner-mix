@@ -112,6 +112,7 @@ export function BrandStudio({
             placeholder="What are you promoting, to whom, and where? What should people do afterwards? Include your positioning, budget, timing and any restrictions you already know."
             onChange={(e) => setInput({ ...input, campaignBrief: e.target.value })}
           />
+          <small>This workspace investigates music artists and podcasts.</small>
         </label>
         <details open={input.supportingUrls.some(Boolean)}>
           <summary>About, product or values pages (optional)</summary>
@@ -372,6 +373,7 @@ export function PartnerCase({
             : 'Weak fit for this brief'}
       </span>
       <h4>{a.role}</h4>
+      <strong>Why it could work</strong>
       <p>{a.rationale}</p>
       <strong>Activation hypothesis</strong>
       <p>{a.activation}</p>
@@ -387,6 +389,10 @@ export function PartnerCase({
         Strategic interpretation of the brief, provider description and cultural results. Partner
         suitability and willingness need independent confirmation.
       </small>
+      <p className="hint">
+        Confirm audience location, rates, rights and availability directly before proposing a
+        commitment.
+      </p>
     </section>
   );
 }

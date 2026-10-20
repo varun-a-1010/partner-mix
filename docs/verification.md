@@ -18,7 +18,7 @@ They require both providers, use at most 12 Qloo requests and two model generati
 and remove their temporary workspace. Model results are nondeterministic; missing
 exact reference matches or blocking questions stop the check for review.
 
-The expanded suite has 41 tests covering source retrieval/citation rejection,
+The expanded suite has 42 tests covering source retrieval/citation rejection,
 truncated output, safe URL validation, approval gates, strategy invalidation,
 strategic exclusions, failures without partial persistence, and concurrent research.
 A standalone real Vertex probe successfully read Allbirds' three official pages.

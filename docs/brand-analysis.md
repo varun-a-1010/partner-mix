@@ -9,7 +9,10 @@ last_verified: 2026-10-20
 ## Connection and bounded work
 
 The server uses `@google/genai` with Vertex, `gemini-3.8-flash`, low thinking,
-structured JSON, a 90-second deadline and no retry loop. Configuration is
+structured JSON, a 90-second deadline and no retry loop. Vertex receives a simple
+shape schema; full length/count constraints remain enforced by Zod after generation.
+The nested bounded assessment schema was rejected with HTTP 400; simplifying the
+provider schema succeeded without weakening the application validator. Configuration is
 `VERTEX_LLM_PROJECT_ID`, base64 or JSON `VERTEX_LLM_SERVICE_ACCOUNT`,
 `VERTEX_LLM_REGION` (default global), and optional `BRAND_MODEL`.
 
@@ -51,7 +54,9 @@ model output cannot directly change offers, locks or saved decisions.
 ## Partner assessment
 
 After Qloo discovery/comparison, a second structured generation receives the
-reviewed analysis, brand sources, provider descriptions and cultural ranks. It
+original planner brief, reviewed analysis, brand sources, provider descriptions
+and cultural ranks. The original brief distinguishes actual requirements from
+proposed activations. A target city does not require an artist born there. It
 must cover every shortlisted candidate exactly once, without arbitrary IDs or
 new source URLs. It proposes a campaign role, rationale, activation and concerns.
 
@@ -64,3 +69,12 @@ Discovery currently supports music artists and podcasts. The analyst is told not
 to propose visual artists, photographers, athletes or unsupported entity types.
 No current listener demographics, reach, willingness or political/ethical values
 are inferred from a cultural affinity. Those remain explicit verification work.
+
+## Provider references
+
+- [Gemini URL Context](https://ai.google.dev/gemini-api/docs/generate-content/url-context)
+- [Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output)
+
+Optional diagnostics expose only stage, elapsed time, outcome, numeric status,
+finish reason and validation field/code paths. They do not log raw requests,
+responses, credentials or provider exception strings.
