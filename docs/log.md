@@ -2,6 +2,10 @@
 
 ## 2026-10-20
 
+- Verified implementation `8d09568` with 27 passing tests, formatting, types and
+  production build. Ten real Qloo requests succeeded; complete 24-partner
+  comparisons, cache reuse, locked-partner repair and decision export passed.
+  Sanitized evidence records synthetic commercial inputs explicitly.
 - Created Partner Mix as an independent repository for the separate sponsorship
   portfolio idea. Common Hours and submitted projects remain untouched.
 - Built campaign/reference inputs, manual and Qloo-linked partners, commercial

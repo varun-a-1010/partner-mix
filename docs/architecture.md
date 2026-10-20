@@ -25,6 +25,8 @@ Cookies last 90 days. No account recovery or cross-browser sharing is implemente
 
 Mutations require a matching Origin. The API enforces input sizes, candidate and
 reference limits, integer money, date ranges, rate limits, and version checks.
+Currency cannot change while costs are entered or after a decision is chosen;
+the app never silently converts old amounts or subtracts unlike currencies.
 External failures return sanitized messages. Production uses a self-only CSP,
 no-referrer, nosniff and frame denial. No request logger is enabled.
 
