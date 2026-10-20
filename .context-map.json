@@ -1,0 +1,62 @@
+{
+  "project": "partner-mix",
+  "entrypoints": ["src/main.tsx", "server/index.ts"],
+  "files": [
+    { "path": "shared/model.ts", "role": "Domain contracts and display helpers", "depends_on": [] },
+    {
+      "path": "shared/validation.ts",
+      "role": "Request constraints",
+      "depends_on": ["shared/model.ts"]
+    },
+    {
+      "path": "server/data.ts",
+      "role": "Campaign creation and explicitly fictional sample",
+      "depends_on": ["shared/model.ts", "server/solver.ts"]
+    },
+    {
+      "path": "server/store.ts",
+      "role": "Private atomic file persistence and versioned writes",
+      "depends_on": ["shared/model.ts"]
+    },
+    {
+      "path": "server/qloo.ts",
+      "role": "Bounded server-only Qloo adapter",
+      "depends_on": ["shared/model.ts", "server/store.ts"]
+    },
+    {
+      "path": "server/workflow.ts",
+      "role": "Discover and compare the complete shortlist",
+      "depends_on": ["server/qloo.ts", "server/solver.ts"]
+    },
+    {
+      "path": "server/solver.ts",
+      "role": "Hard constraints, ordinal portfolio heuristic and evidence-aware export",
+      "depends_on": ["shared/model.ts"]
+    },
+    {
+      "path": "server/app.ts",
+      "role": "Authenticated API, origin guard and optimistic concurrency",
+      "depends_on": ["server/store.ts", "server/qloo.ts", "server/workflow.ts", "server/solver.ts"]
+    },
+    {
+      "path": "src/App.tsx",
+      "role": "Campaign navigation and mutations",
+      "depends_on": ["src/api.ts", "src/forms.tsx", "src/views.tsx"]
+    },
+    {
+      "path": "src/forms.tsx",
+      "role": "Brief, entity confirmation, roster and offers",
+      "depends_on": ["shared/model.ts", "src/api.ts"]
+    },
+    {
+      "path": "src/views.tsx",
+      "role": "Package comparison, evidence matrix and decision brief",
+      "depends_on": ["shared/model.ts", "src/forms.tsx"]
+    },
+    {
+      "path": "scripts/test-qloo-live.ts",
+      "role": "Opt-in bounded real API verification",
+      "depends_on": ["server/qloo.ts", "server/app.ts"]
+    }
+  ]
+}
