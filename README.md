@@ -16,7 +16,8 @@ node scripts/with-slate-vertex.mjs npm run dev
 
 The launcher retrieves only the three explicitly authorized Vertex settings from
 Doppler `slate/dev_mac`, into child-process memory. It never writes credentials.
-`QLOO_API_KEY` must also be present in the API process environment. Production
+The launcher also fetches `QLOO_API_KEY` from Doppler `shared/dev_mac` (a hackathon test
+key) into the same child-process memory; an already-set `QLOO_API_KEY` wins. Production
 should use app-owned credentials. No credentials are bundled into the client.
 
 Open [Partner Mix](http://127.0.0.1:5193). The API uses port 3193. Choose **Open

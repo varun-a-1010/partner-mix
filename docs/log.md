@@ -49,3 +49,5 @@
 - Added bounded server-only Qloo discovery/comparison, explicit sample/live
   separation, private file storage, scoped cookies and stale-write rejection.
 - Added domain, API and provider tests plus an opt-in ten-request live check.
+- 2026-10-22: The local launcher now also fetches the shared Qloo test key from Doppler
+  `shared/dev_mac` into child-process memory.
