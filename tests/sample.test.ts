@@ -34,6 +34,7 @@ function mockQloo() {
   );
   const qloo: Qloo = {
     status: 'configured',
+    demographics: async () => [],
     search: vi.fn(async (query, kind) => refs.filter((r) => r.name === query && r.kind === kind)),
     insights: vi.fn(async (kind, seedIds, ids) => {
       const all = entities.filter((e) => e.kind === kind);

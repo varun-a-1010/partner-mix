@@ -1,3 +1,4 @@
+import type { AudienceContext } from './audience';
 import type { BrandIntake, BrandResearch, PartnerAssessment } from './brand';
 export const seedKinds = ['brand', 'artist', 'podcast', 'movie', 'book'] as const;
 export type SeedKind = (typeof seedKinds)[number];
@@ -89,6 +90,7 @@ export type Planning = {
   questions: string[];
 };
 export type Selection = {
+  audience?: AudienceContext;
   package: Package;
   partners: Candidate[];
   brief: Brief;
@@ -106,6 +108,7 @@ export type Revision = {
   costChange: number;
 };
 export type Workspace = {
+  audience?: AudienceContext;
   id: string;
   version: number;
   createdAt: string;

@@ -16,7 +16,7 @@ import { hash, newWorkspace, sameHash } from './data';
 import { AppError, FileStore } from './store';
 import { createQloo, type Qloo } from './qloo';
 import { exportBrief, inputFingerprint, solve } from './solver';
-import { runComparison } from './workflow';
+import { runComparison, loadAudienceContext } from './workflow';
 import { prepareSample, addSampleEstimates } from './sample';
 import { createBrandAnalyst, type BrandAnalyst } from './brand-analyst';
 import { approveBrand, researchBrand } from './brand-workflow';
@@ -133,6 +133,7 @@ export async function buildApp(
             current.intake = result.intake;
             current.research = result.research;
             current.brief = result.brief;
+            current.audience = undefined;
           }),
         );
       } finally {
@@ -205,6 +206,7 @@ export async function buildApp(
         throw new AppError(400, 'Partner type does not match the entity.');
       if (input.entity && w.candidates.some((c) => c.entityId === input.entity!.entityId))
         throw new AppError(422, 'This partner is already on the shortlist.');
+      w.audience = undefined;
       w.candidates.push({
         id: randomUUID(),
         name: input.entity?.name ?? input.name,
@@ -244,6 +246,7 @@ export async function buildApp(
           )
         )
           throw new AppError(422, 'This Qloo entity is already on the shortlist.');
+        w.audience = undefined;
         c.entityId = input.entity.entityId;
         c.name = input.entity.name;
         c.description = input.entity.description;
@@ -306,7 +309,30 @@ export async function buildApp(
           await store.update(w.id, version, (current) => {
             current.candidates = result.candidates;
             current.evidence = result.evidence;
+            current.audience = result.audience;
             current.run = result.run;
+          }),
+        );
+      } finally {
+        active.delete(w.id);
+      }
+    },
+  );
+  app.post(
+    '/api/w/:id/audience',
+    { config: { rateLimit: { max: 6, timeWindow: '1 minute' } } },
+    async (r) => {
+      const w = await owner(r);
+      const { version } = versionBody.parse(r.body);
+      if (w.version !== version)
+        throw new AppError(409, 'The campaign changed. Reload before refreshing audience context.');
+      if (active.has(w.id)) throw new AppError(409, 'A campaign analysis is already running.');
+      active.add(w.id);
+      try {
+        const audience = await loadAudienceContext(w, qloo);
+        return view(
+          await store.update(w.id, version, (current) => {
+            current.audience = audience;
           }),
         );
       } finally {
@@ -322,6 +348,7 @@ export async function buildApp(
       const old = w.selection;
       w.selection = {
         package: p,
+        audience: structuredClone(w.audience),
         partners: w.candidates.filter((c) => p.partnerIds.includes(c.id)),
         brief: structuredClone(w.brief),
         evidence: structuredClone(w.evidence),

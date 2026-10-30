@@ -15,7 +15,7 @@ import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
 import type { WorkspaceView } from '../shared/model';
 
-// Explicit opt-in: at most 12 Qloo calls and two Vertex model generations.
+// Explicit opt-in: at most 17 Qloo calls and two Vertex model generations.
 // Only hypothetical commercial inputs; no user workspace or partner contacted.
 assert(process.env.QLOO_API_KEY, 'QLOO_API_KEY must be configured in process memory.');
 assert(
@@ -28,7 +28,7 @@ let requested = 0;
 const qloo = createQloo({
   apiKey: process.env.QLOO_API_KEY,
   fetch: async (input, init) => {
-    assert(++requested <= 12, 'Live Qloo request budget exhausted.');
+    assert(++requested <= 17, 'Live Qloo request budget exhausted.');
     const url = new URL(String(input)),
       start = Date.now();
     const response = await fetch(input, init);

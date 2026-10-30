@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-10-30
+
+- Added real Qloo age/gender profiles, batched with per-entity attribution, provenance
+  and cache dates; missing values and provider failures remain explicit.
+- Added paired signed charts and automatic hydration of saved workspaces, with a
+  separate refresh. Context supports the user's campaign judgment without changing
+  the package solver, cultural ranking or commercial disposition.
+- Preserved context in exports; Partner Mix decisions snapshot it when selected.
+- Added parsing, batching, partial-failure, API ownership/persistence/export and
+  server-rendered chart checks, plus a bounded opt-in live check.
+
 ## 2026-10-20
 
 - Verified the complete brand-first flow on `cac0e04`: both Gemini generations

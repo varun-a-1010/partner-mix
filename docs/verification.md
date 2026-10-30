@@ -14,7 +14,7 @@ optimistic concurrency and the provider boundary.
 
 `test:qloo` and `test:qloo:sample` now exercise brand research, explicit reference
 approval, Qloo discovery, Gemini partner assessment, selection, repair and export.
-They require both providers, use at most 12 Qloo requests and two model generations,
+They require both providers, use at most 17 Qloo requests and two model generations,
 and remove their temporary workspace. Model results are nondeterministic; missing
 exact reference matches or blocking questions stop the check for review.
 
@@ -89,3 +89,18 @@ No browser or visual QA was performed, following the user's standing instruction
 No financial, marketing-outcome, partner-availability or real-offer validation is
 claimed. File persistence supports one local server process. No deployment,
 remote repository, multi-user access or Devpost submission has been verified.
+
+## Demographic context verification — 30 October 2026
+
+`npm run test:audience` is an opt-in live check requiring `QLOO_API_KEY` in process
+memory. It makes at most three requests: resolve Allbirds and Bon Iver, then retrieve
+their individual demographic blocks in one batch. It checks six age bands, exact
+entity attribution, and cache reuse without replacing retrieval dates. It has no
+LLM calls, no commercial inputs, and no existing workspace mutations.
+
+Automated coverage includes zero-vs-missing semantics, malformed numeric values,
+missing entity blocks, batches limited to eight and two concurrent calls, saved-data
+preservation on partial failures, signed chart rendering, private API access and
+export context. No browser or visual QA is performed.
+
+Live demographic check passed on 30 October 2026: both example entities returned all six age bands and both gender fields in one demographics response; the repeat used no extra requests and kept its retrieval date. All 48 tests, formatting, type checking and production build passed.

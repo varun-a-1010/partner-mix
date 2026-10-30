@@ -32,8 +32,8 @@ not preset taste references. Gemini proposes references; Qloo resolves them, and
 planner confirms the identities. Each approved direction contributes its first two
 artists and podcasts to a deduplicated sample shortlist of up to eight. Normal
 campaign discovery can return up to 24. Four comparisons rank the same shortlist.
-The complete first flow uses at most 12 Qloo requests (four searches plus eight
-insight calls), before cache reuse.
+The cultural discovery flow uses at most 12 Qloo requests (four searches plus eight
+insight calls), before cache reuse and demographic enrichment described below.
 
 Sample cost estimates are illustrative and availability is unknown. Gemini then
 assesses campaign-specific creative fit independently of Qloo's cultural rank.
@@ -57,3 +57,40 @@ Group names are marketer-defined hypotheses, not inferred demographics.
   normalized per query; use relative position in context.
 
 See [verification](verification.md) for the actual runtime checks.
+
+## Demographic context — 30 October 2026
+
+The adapter now requests `/v2/insights` with `filter.type=urn:demographics` and
+up to eight entity IDs per batch. Each returned block is matched to its own entity
+ID; signals are never pooled into an invented shared-audience profile. Collection
+runs at most two batches concurrently and retains request parameters and original
+retrieval dates. Only finite numeric values within −1..1 from the six age bands
+and returned male/female fields are kept. Missing values remain missing; zero is
+preserved as average affinity. The existing credential-scoped ten-minute cache,
+timeout, response-size bound and sanitized errors apply.
+
+The UI shows signed age/gender indices on a fixed scale, with per-entity retrieval
+dates, query receipts and partial/missing/error states. Positive means above-average
+affinity for a demographic group; negative means below average. These are not
+percentages or counts of fans. Similarity can support a natural partnership;
+differences can be useful when expanding to another audience. No demographic fit
+score or automatic exclusion is added.
+
+Demographic loading is independent of Gemini. A failed batch does not erase a
+previous successful profile: its old retrieval date stays visible with a refresh
+failure note. New failures are marked unavailable, never zero.
+
+Discovery/comparison loads the linked candidates and, when a single exact brand
+search match exists, the campaign brand. An ambiguous/unresolved brand stays
+explicitly absent; no first-hit substitution is made. The partner dropdown compares
+one partner at a time. Old workspaces try loading once automatically; refresh is
+also available. No synthetic legacy sample IDs are queried. Budget/offer changes
+do not requery demographics. A new candidate or Qloo relink invalidates the context.
+New decision snapshots and Markdown exports retain the demographic context present
+at selection time. Refreshing demographic context alone does not change the solver
+or invalidate an earlier decision.
+
+At the maximum 24 candidates, this adds at most one brand lookup and four demographic
+batches to a comparison. The eight-candidate sample adds at most three requests.
+
+Official reference: [Qloo demographic insights](https://github.com/qloo/docs-public/blob/main/reference/demographics-use-case.md).

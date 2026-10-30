@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AudioLines, Layers3, ListChecks, FileText, NotebookPen, Plus, X } from 'lucide-react';
 import type { WorkspaceView } from '../shared/model';
 import { money, sampleDescription } from '../shared/model';
@@ -6,6 +6,8 @@ import { api, ApiError } from './api';
 import { BriefEditor, Roster } from './forms';
 import { ComparisonBoard, Decision } from './views';
 import { BrandStudio } from './brand';
+import { AudienceExplorer } from './Audience';
+import { isLegacySample } from '../shared/model';
 import { brandReady } from '../shared/brand';
 
 type Tab = 'brand' | 'brief' | 'partners' | 'packages' | 'decision';
@@ -85,7 +87,9 @@ export function App() {
         ? 'Reading the brand website and interpreting your campaign brief…'
         : path === '/compare'
           ? 'Comparing cultural evidence and preparing packages…'
-          : 'Saving campaign…',
+          : path === '/audience'
+            ? 'Loading age and gender context from Qloo…'
+            : 'Saving campaign…',
     );
     setError('');
     setNotice('');
@@ -105,7 +109,9 @@ export function App() {
               ? 'Decision saved. Open the decision brief to review or export it.'
               : path === '/compare'
                 ? 'Comparison saved. Add or update offers to see feasible packages.'
-                : 'Saved. Package options now use the updated inputs.',
+                : path === '/audience'
+                  ? 'Audience context saved. Use it alongside the campaign goal.'
+                  : 'Saved. Package options now use the updated inputs.',
       );
       return true;
     } catch (e) {
@@ -122,6 +128,25 @@ export function App() {
       setBusy('');
     }
   }
+  const audienceAttempt = useRef(new Set<string>());
+  useEffect(() => {
+    const key = w
+      ? `${w.id}:${w.research?.id}:${w.candidates.map((c) => c.entityId ?? '').join(',')}`
+      : '';
+    if (
+      !w ||
+      w.audience ||
+      busy ||
+      !w.candidates.some((c) => c.entityId) ||
+      !brandReady(w) ||
+      isLegacySample(w) ||
+      w.provider !== 'configured' ||
+      audienceAttempt.current.has(key)
+    )
+      return;
+    audienceAttempt.current.add(key);
+    void mutate('/audience', {});
+  }, [w?.id, w?.audience, w?.candidates.length, busy]);
   const edit = (id: string) => {
     setEditId(id);
     setTab('partners');
@@ -354,6 +379,18 @@ export function App() {
             />
           )}
           {tab === 'brief' && <BriefEditor key={`${w.id}:${w.version}`} w={w} mutate={mutate} />}
+          {tab === 'partners' && !isLegacySample(w) && (
+            <AudienceExplorer
+              key={w.id}
+              context={w.audience}
+              partners={w.candidates.flatMap((c) =>
+                c.entityId ? [{ id: c.entityId, name: c.name }] : [],
+              )}
+              busy={!!busy}
+              connected={w.provider === 'configured'}
+              onRefresh={() => void mutate('/audience', {})}
+            />
+          )}
           {tab === 'partners' && (
             <Roster
               w={w}

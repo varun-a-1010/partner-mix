@@ -180,3 +180,37 @@ describe('campaign portfolio decisions', () => {
     expect(solve(w).options).toEqual([]);
   });
 });
+
+it('keeps demographic context out of package ordering and exports the saved decision snapshot', () => {
+  const w = demo(),
+    p = solve(w).options[0];
+  const selected = w.candidates.filter((c) => p.partnerIds.includes(c.id));
+  const fingerprint = inputFingerprint(w);
+  w.audience = {
+    profiles: selected.map((c) => ({
+      entityId: c.entityId!,
+      status: 'available',
+      age: { '55_and_older': 0.11 },
+      gender: {},
+      fetchedAt: '2026-10-30T00:00:00Z',
+      request: { path: '/v2/insights', params: { 'filter.type': 'urn:demographics' } },
+    })),
+  };
+  expect(inputFingerprint(w)).toBe(fingerprint);
+  expect(solve(w).options[0]).toEqual(p);
+  w.selection = {
+    package: p,
+    partners: selected,
+    brief: structuredClone(w.brief),
+    evidence: structuredClone(w.evidence),
+    research: structuredClone(w.research),
+    intake: structuredClone(w.intake),
+    audience: structuredClone(w.audience),
+    chosenAt: new Date().toISOString(),
+    inputFingerprint: fingerprint,
+  };
+  for (const profile of w.audience.profiles) profile.age['55_and_older'] = 0.99;
+  const exported = exportBrief(w);
+  expect(exported).toContain('+0.11');
+  expect(exported).not.toContain('+0.99');
+});

@@ -15,7 +15,8 @@
     "test:qloo:sample": "tsx scripts/test-qloo-live.ts --sample",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run format:check && npm test && npm run build"
+    "check": "npm run format:check && npm test && npm run build",
+    "test:audience": "tsx scripts/test-audience-live.ts"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.3",

@@ -75,3 +75,18 @@ assessment identities that do not match. No LLM can accept an offer or change a 
 A chosen decision snapshots its intake, reviewed research, brief, partners, evidence and package. Later
 changes set `selectionStale` through an input fingerprint. Reselecting preserves
 the immediately previous snapshot and a before/after receipt.
+
+## Demographic context
+
+`shared/audience.ts` defines per-entity demographic profiles and Markdown formatting;
+`server/audience.ts` parses provider responses and collects bounded batches.
+`src/Audience.tsx` renders paired signed charts and missing coverage. The optional
+`Workspace.audience` field keeps existing workspace files backward compatible.
+Context is stored in the same private capability-protected workspace, and survives
+reloads. It is separate from cultural ranks and commercial assessments.
+
+`POST /api/w/:id/audience` requires ownership, matching Origin, a current version,
+a nonlegacy sample and reviewed brand strategy. It uses the existing active-work
+fence and atomically saves after a version recheck. Discovery/comparison also records
+context. Brand reanalysis and candidate linking invalidate its binding. A selection
+copies its context; exporting a saved selection uses that copy, not newer profiles.

@@ -5,7 +5,7 @@
     {
       "path": "shared/model.ts",
       "role": "Domain contracts and display helpers",
-      "depends_on": []
+      "depends_on": ["shared/audience.ts"]
     },
     {
       "path": "shared/validation.ts",
@@ -30,12 +30,12 @@
     {
       "path": "server/qloo.ts",
       "role": "Bounded server-only Qloo adapter",
-      "depends_on": ["shared/model.ts", "server/store.ts"]
+      "depends_on": ["shared/model.ts", "server/store.ts", "server/audience.ts"]
     },
     {
       "path": "server/workflow.ts",
       "role": "Discover and compare the complete shortlist",
-      "depends_on": ["server/qloo.ts", "server/solver.ts"]
+      "depends_on": ["server/qloo.ts", "server/solver.ts", "shared/audience.ts"]
     },
     {
       "path": "server/solver.ts",
@@ -58,7 +58,13 @@
     {
       "path": "src/App.tsx",
       "role": "Campaign navigation and mutations",
-      "depends_on": ["src/api.ts", "src/forms.tsx", "src/views.tsx", "src/brand.tsx"]
+      "depends_on": [
+        "src/api.ts",
+        "src/forms.tsx",
+        "src/views.tsx",
+        "src/brand.tsx",
+        "src/Audience.tsx"
+      ]
     },
     {
       "path": "src/forms.tsx",
@@ -99,6 +105,26 @@
       "path": "scripts/with-slate-vertex.mjs",
       "role": "Authorized local Vertex runtime launcher; no persistent credentials",
       "depends_on": []
+    },
+    {
+      "path": "shared/audience.ts",
+      "role": "Age/gender context contracts and export formatting",
+      "depends_on": []
+    },
+    {
+      "path": "server/audience.ts",
+      "role": "Strict Qloo demographic parsing and bounded batched collection",
+      "depends_on": ["shared/audience.ts"]
+    },
+    {
+      "path": "src/Audience.tsx",
+      "role": "Signed demographic comparison, missing coverage and query receipts",
+      "depends_on": ["shared/audience.ts"]
+    },
+    {
+      "path": "scripts/test-audience-live.ts",
+      "role": "Opt-in three-request demographic coverage and cache check",
+      "depends_on": ["server/qloo.ts", "server/audience.ts"]
     }
   ]
 }

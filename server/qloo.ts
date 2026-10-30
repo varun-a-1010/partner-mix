@@ -1,3 +1,5 @@
+import { parseDemographics } from './audience';
+import type { AudienceProfile } from '../shared/audience';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Entity, SeedKind, PartnerKind } from '../shared/model';
@@ -11,6 +13,7 @@ export type Insight = {
   results: { entity: Entity; rank: number; contributingSeedIds: string[] }[];
 };
 export interface Qloo {
+  demographics(ids: string[]): Promise<AudienceProfile[]>;
   status: 'configured' | 'not-connected';
   search(query: string, kind: SeedKind): Promise<Entity[]>;
   insights(kind: PartnerKind, seedIds: string[], candidateIds?: string[]): Promise<Insight>;
@@ -104,6 +107,27 @@ export function createQloo(
   }
   return {
     status: key ? 'configured' : 'not-connected',
+    async demographics(ids) {
+      const requested = [
+        ...new Set(
+          z
+            .array(z.string().uuid())
+            .min(1)
+            .max(8)
+            .parse(ids)
+            .map((id) => id.toUpperCase()),
+        ),
+      ].sort();
+      const { data, fetchedAt } = await get('/v2/insights', {
+        'filter.type': 'urn:demographics',
+        'signal.interests.entities': requested.join(','),
+      });
+      try {
+        return parseDemographics(data, requested, fetchedAt);
+      } catch {
+        throw new AppError(502, 'Qloo returned an invalid demographic response.');
+      }
+    },
     async search(query, kind) {
       const { data } = await get('/search', {
         query: query.trim(),

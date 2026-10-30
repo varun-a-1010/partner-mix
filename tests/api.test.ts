@@ -139,6 +139,7 @@ describe('private campaign API', () => {
     let calls = 0;
     const { app, w, headers } = await setup({
       status: 'configured',
+      demographics: async () => [],
       search: async () => {
         calls++;
         return [];
@@ -167,6 +168,7 @@ describe('private campaign API', () => {
     });
     const qloo: Qloo = {
       status: 'configured',
+      demographics: async () => [],
       search: async () => [],
       insights: async (kind, seedIds, ids = []) => {
         started();
@@ -206,5 +208,67 @@ describe('private campaign API', () => {
     expect(saved?.brief.campaign).toBe('Edited while comparing');
     expect(saved?.evidence?.comparisons[0].source).toBe('sample');
     expect(saved?.version).toBe(3);
+  });
+  it('persists private audience context without changing package order or accepting unowned requests', async () => {
+    const qloo: Qloo = {
+      status: 'configured',
+      search: async () => [],
+      insights: async () => {
+        throw new Error('unused');
+      },
+      demographics: async (ids) =>
+        ids.map((entityId) => ({
+          entityId,
+          status: 'available',
+          age: { '55_and_older': 0.4 },
+          gender: {},
+          fetchedAt: '2026-10-30T00:00:00Z',
+          request: {
+            path: '/v2/insights',
+            params: {
+              'filter.type': 'urn:demographics',
+              'signal.interests.entities': ids.join(','),
+            },
+          },
+        })),
+    };
+    const { app, w, headers, store } = await setup(qloo);
+    const ready = await store.update(w.id, w.version, (current) => {
+      current.demo = false;
+    });
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: `/api/w/${w.id}/audience`,
+          headers: { host: headers.host, origin: headers.origin },
+          payload: { version: ready.version },
+        })
+      ).statusCode,
+    ).toBe(404);
+    const before = (await app.inject({ url: `/api/w/${w.id}`, headers })).json<WorkspaceView>();
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/w/${w.id}/audience`,
+      headers,
+      payload: { version: ready.version },
+    });
+    expect(response.statusCode).toBe(200);
+    const after = response.json<WorkspaceView>();
+    expect(after.audience?.profiles.length).toBeGreaterThan(0);
+    expect(after.audience?.subject).toBeUndefined();
+    expect(after.audience?.subjectNote).toContain('unambiguously');
+    expect(after.planning).toEqual(before.planning);
+    expect((await store.get(w.id))?.audience).toEqual(after.audience);
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: `/api/w/${w.id}/audience`,
+          headers,
+          payload: { version: ready.version },
+        })
+      ).statusCode,
+    ).toBe(409);
   });
 });

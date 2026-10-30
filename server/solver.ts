@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { audienceMarkdown } from '../shared/audience';
 import type {
   Candidate,
   Comparison,
@@ -261,6 +262,7 @@ export function exportBrief(w: Workspace): string {
       evidence: w.selection.evidence,
       research: w.selection.research,
       intake: w.selection.intake,
+      audience: w.selection.audience,
     };
   const lines = [
     `# ${w.brief.campaign}`,
@@ -315,6 +317,9 @@ export function exportBrief(w: Workspace): string {
           : []),
         '',
       );
+    }
+    for (const c of w.selection.partners) {
+      if (c.entityId) lines.push(...audienceMarkdown(w.audience, { id: c.entityId, name: c.name }));
     }
     lines.push(
       '## Why this mix',

@@ -1,3 +1,4 @@
+import { collectAudiences } from './audience';
 import { randomUUID } from 'node:crypto';
 import type { Comparison, StoredWorkspace } from '../shared/model';
 import { emptyOffer, isLegacySample } from '../shared/model';
@@ -98,6 +99,10 @@ export async function runComparison(
   }
   if (!comparisons.length)
     throw new AppError(422, 'Add Qloo-linked partners or discover candidates first.');
+  next.audience = await loadAudienceContext(next, qloo);
+  steps.push(
+    'Loaded age and gender affinity context separately from the cultural package ordering.',
+  );
   next.evidence = {
     comparisons,
     fingerprint: evidenceFingerprint(next),
@@ -108,4 +113,38 @@ export async function runComparison(
     steps,
   };
   return next;
+}
+
+export async function loadAudienceContext(w: StoredWorkspace, qloo: Qloo) {
+  if (isLegacySample(w))
+    throw new AppError(400, 'Fictional sample entities cannot load audience context.');
+  if (!brandReady(w))
+    throw new AppError(422, 'Review and approve the brand before loading audience context.');
+  if (qloo.status !== 'configured') throw new AppError(503, 'Qloo is not connected.');
+  let subject = w.audience?.subject?.name === w.brief.brand ? w.audience.subject : undefined;
+  let subjectNote: string | undefined;
+  if (!subject) {
+    try {
+      const normalize = (s: string) => s.normalize('NFKC').trim().toLowerCase();
+      const matches = (await qloo.search(w.brief.brand, 'brand')).filter(
+        (e) => normalize(e.name) === normalize(w.brief.brand),
+      );
+      if (matches.length === 1) subject = { id: matches[0].entityId, name: matches[0].name };
+      else
+        subjectNote =
+          'The campaign brand could not be identified unambiguously in Qloo. Showing partner signals only.';
+    } catch {
+      subjectNote = 'The campaign brand could not be looked up. Showing available partner signals.';
+    }
+  }
+  return collectAudiences(
+    qloo,
+    [
+      ...(subject ? [subject.id] : []),
+      ...w.candidates.flatMap((c) => (c.entityId ? [c.entityId] : [])),
+    ],
+    subject,
+    w.audience,
+    subjectNote,
+  );
 }
