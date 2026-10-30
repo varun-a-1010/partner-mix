@@ -1,7 +1,6 @@
 import { pairSummary, type PairReport } from '../shared/partnership';
 import {
   GoogleGenAI,
-  ThinkingLevel,
   type GenerateContentParameters,
   type GenerateContentResponse,
 } from '@google/genai';
@@ -16,6 +15,7 @@ import {
   type PartnerAssessment,
 } from '../shared/brand';
 import type { Candidate, Evidence } from '../shared/model';
+import { MODEL_CHAIN, thinkingFor, withFallback } from './models';
 import { AppError } from './store';
 
 export interface BrandAnalyst {
@@ -93,9 +93,10 @@ export function createBrandAnalyst(
     model?: string;
     generate?: (request: GenerateContentParameters) => Promise<GenerateContentResponse>;
     diagnostic?: (event: AnalystDiagnostic) => void;
+    sleep?: (ms: number) => Promise<void>;
   } = {},
 ): BrandAnalyst {
-  const model = options.model ?? 'gemini-3.8-flash';
+  const chain = options.model ? [options.model, ...MODEL_CHAIN] : MODEL_CHAIN;
   let client: GoogleGenAI | undefined;
   if (options.project && options.serviceAccount) {
     try {
@@ -126,31 +127,37 @@ export function createBrandAnalyst(
       );
     const started = Date.now();
     const stage = urls ? 'research' : 'assessment';
-    let response: GenerateContentResponse | undefined;
+    let response = undefined as GenerateContentResponse | undefined;
     try {
-      response = await generate({
-        model,
-        contents: prompt,
-        config: {
-          systemInstruction: system,
-          maxOutputTokens: 8000,
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-          responseMimeType: 'application/json',
-          responseJsonSchema: generationSchema(z.toJSONSchema(schema)),
-          ...(urls ? { tools: [{ urlContext: {} }] } : {}),
-          abortSignal: AbortSignal.timeout(90_000),
+      const { value: data, model } = await withFallback(
+        chain,
+        async (candidate, timeoutMs) => {
+          response = await generate({
+            model: candidate,
+            contents: prompt,
+            config: {
+              systemInstruction: system,
+              maxOutputTokens: 8000,
+              ...thinkingFor(candidate),
+              responseMimeType: 'application/json',
+              responseJsonSchema: generationSchema(z.toJSONSchema(schema)),
+              ...(urls ? { tools: [{ urlContext: {} }] } : {}),
+              abortSignal: AbortSignal.timeout(timeoutMs),
+            },
+          });
+          if (response.candidates?.[0]?.finishReason !== 'STOP' || !response.text)
+            throw new Error('Incomplete result');
+          return schema.parse(JSON.parse(response.text));
         },
-      });
-      if (response.candidates?.[0]?.finishReason !== 'STOP' || !response.text)
-        throw new Error('Incomplete result');
-      const data = schema.parse(JSON.parse(response.text));
+        { sleep: options.sleep },
+      );
       options.diagnostic?.({
         stage,
         outcome: 'complete',
         elapsedMs: Date.now() - started,
-        finishReason: response.candidates?.[0]?.finishReason,
+        finishReason: response?.candidates?.[0]?.finishReason,
       });
-      return { data, response };
+      return { data, response: response!, model };
     } catch (error) {
       if (error instanceof AppError) throw error;
       const status = (error as { status?: unknown })?.status;
@@ -176,7 +183,7 @@ export function createBrandAnalyst(
     status: generate ? 'configured' : 'not-connected',
     async research(input) {
       const urls = [...new Set([input.website, ...input.supportingUrls].map(publicWebsite))];
-      const { data, response } = await call(
+      const { data, response, model } = await call(
         analysisSchema,
         `Read these exact public brand pages using URL context: ${JSON.stringify(urls)}.
 Campaign brief supplied by the planner (not a statement of an actual brand campaign):

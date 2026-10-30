@@ -53,4 +53,5 @@ No athlete discovery, person/celebrity matching, brand-to-brand collaboration,
 CRM integration, multi-user accounts or automatic market validation is included.
 Campaign geography is a human due-diligence item in this MVP, not a Qloo filter.
 
-The local prototype has no remote, hosted deployment or Devpost record.
+The hosted prototype runs at https://partner-mix.slate-app.online from a single server process.
+Campaigns are private files on that server, reachable only through their scoped cookie.

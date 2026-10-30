@@ -3,7 +3,13 @@
 ## 2026-10-31 — Hosting preparation
 
 - Trusted the local nginx proxy so rate limits apply per forwarded client instead
-  of one shared `127.0.0.1` bucket. Added a regression test. Not yet deployed.
+  of one shared `127.0.0.1` bucket. Added a regression test.
+- Added a model chain led by Gemini 4 Argon, with invalid output and rate limits falling through
+  to Flash models, after Gemini 3.8 Flash timed out intermittently on this project.
+- Qloo can omit an entity from a comparison, which used to disable cultural ranking for the whole
+  campaign. Newly discovered partners it omits are now left out and named in the run steps.
+  Planner-chosen partners stay, and their missing coverage is still reported.
+- Deployed to Motif at partner-mix.slate-app.online and published the repository under MIT.
 
 ## 2026-10-30 — Partnership exploration
 

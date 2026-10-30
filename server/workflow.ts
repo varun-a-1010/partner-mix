@@ -1,12 +1,32 @@
 import type { PairOptions } from '../shared/partnership';
 import { collectAudiences } from './audience';
 import { randomUUID } from 'node:crypto';
-import type { Comparison, StoredWorkspace } from '../shared/model';
+import type { Candidate, Comparison, StoredWorkspace } from '../shared/model';
 import { emptyOffer, isLegacySample } from '../shared/model';
 import { AppError } from './store';
 import type { Qloo } from './qloo';
 import { evidenceFingerprint } from './solver';
 import { brandReady } from '../shared/brand';
+
+/**
+ * Qloo can omit an entity from a comparison. A partner it just suggested is left out rather than
+ * ranked by guesswork. Partners the planner chose stay, so their missing coverage is reported.
+ */
+export function omitUncompared(
+  w: { candidates: Candidate[] },
+  comparisons: Comparison[],
+  discovered: Set<string>,
+) {
+  const omitted = w.candidates.filter(
+    (c) =>
+      discovered.has(c.id) &&
+      comparisons.some((q) => q.kind === c.kind && !q.results.some((r) => r.candidateId === c.id)),
+  );
+  const gone = new Set(omitted.map((c) => c.id));
+  w.candidates = w.candidates.filter((c) => !gone.has(c.id));
+  for (const q of comparisons) q.candidateIds = q.candidateIds.filter((id) => !gone.has(id));
+  return omitted.map((c) => c.name);
+}
 
 export async function runComparison(
   w: StoredWorkspace,
@@ -28,6 +48,7 @@ export async function runComparison(
     throw new AppError(422, 'Add at least one confirmed taste reference for each group.');
   const next = structuredClone(w);
   const steps: string[] = [];
+  const discovered = new Set<string>();
   if (discover) {
     if (w.candidates.length > 16)
       throw new AppError(
@@ -49,8 +70,10 @@ export async function runComparison(
         for (const { entity } of insight.results.slice(0, options.discoveryPerGroup ?? 6)) {
           if (next.candidates.some((c) => c.entityId === entity.entityId)) continue;
           if (next.candidates.length >= 24) break;
+          const id = randomUUID();
+          discovered.add(id);
           next.candidates.push({
-            id: randomUUID(),
+            id,
             name: entity.name,
             description: entity.description,
             entityId: entity.entityId,
@@ -100,6 +123,9 @@ export async function runComparison(
   }
   if (!comparisons.length)
     throw new AppError(422, 'Add Qloo-linked partners or discover candidates first.');
+  const omitted = omitUncompared(next, comparisons, discovered);
+  if (omitted.length)
+    steps.push(`Left out ${omitted.join(', ')} because Qloo returned no comparison.`);
   next.audience = await loadAudienceContext(next, qloo);
   steps.push(
     'Loaded age and gender affinity context separately from the cultural package ordering.',

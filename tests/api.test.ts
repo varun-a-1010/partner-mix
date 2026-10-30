@@ -4,7 +4,8 @@ import { mkdtemp, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import type { WorkspaceView } from '../shared/model';
+import type { Candidate, Comparison, WorkspaceView } from '../shared/model';
+import { omitUncompared } from '../server/workflow';
 import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
 import type { Qloo } from '../server/qloo';
@@ -38,6 +39,20 @@ async function setup(qloo?: Qloo) {
   ).json<WorkspaceView>();
   return { app, store, w, headers: { ...headers, cookie }, dir, created };
 }
+describe('qloo omissions during discovery', () => {
+  it('leaves out a discovered partner Qloo did not compare, but keeps the planner choices', () => {
+    const candidate = (id: string) => ({ id, name: id, kind: 'artist' }) as Candidate;
+    const comparison = {
+      kind: 'artist',
+      candidateIds: ['kept', 'omitted', 'mine'],
+      results: [{ candidateId: 'kept' }],
+    } as Comparison;
+    const w = { candidates: ['kept', 'omitted', 'mine'].map(candidate) };
+    expect(omitUncompared(w, [comparison], new Set(['kept', 'omitted']))).toEqual(['omitted']);
+    expect(w.candidates.map((c) => c.id)).toEqual(['kept', 'mine']);
+    expect(comparison.candidateIds).toEqual(['kept', 'mine']);
+  });
+});
 describe('behind the local proxy', () => {
   it('limits each forwarded client separately', async () => {
     const { app, headers } = await setup();

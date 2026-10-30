@@ -1,5 +1,7 @@
 # Partner Mix
 
+**Live demo:** https://partner-mix.slate-app.online
+
 A campaign planning studio for a brand partnerships manager. Start with the
 brand’s website and campaign brief, review its positioning and proposed search
 directions, then investigate music artists and podcasts. Compare affordable
@@ -14,11 +16,9 @@ npm ci
 node scripts/with-slate-vertex.mjs npm run dev
 ```
 
-The launcher retrieves only the three explicitly authorized Vertex settings from
-Doppler `slate/dev_mac`, into child-process memory. It never writes credentials.
-The launcher also fetches `QLOO_API_KEY` from Doppler `shared/dev_mac` (a hackathon test
-key) into the same child-process memory; an already-set `QLOO_API_KEY` wins. Production
-should use app-owned credentials. No credentials are bundled into the client.
+The launcher fetches Vertex settings and `QLOO_API_KEY` into child-process memory and never
+writes them. Without it, set `VERTEX_LLM_PROJECT_ID`, `VERTEX_LLM_SERVICE_ACCOUNT` and
+`QLOO_API_KEY` yourself. No credentials are bundled into the client.
 
 Open [Partner Mix](http://127.0.0.1:5193). The API uses port 3193. Choose **Open
 Allbirds sample** in an existing campaign, or **Explore an Allbirds campaign**
@@ -59,5 +59,8 @@ hypothetical brief and synthetic costs instead.
 
 Gemini interpretations need review; URL retrieval does not prove every generated
 claim. Qloo affinity is not verified audience reach, rates, willingness or brand
-alignment. No outreach, bookings, contracts, hosted deployment or Devpost submission
-is performed. See [the docs](docs/index.md).
+alignment. No outreach, bookings or contracts are performed. See [the docs](docs/index.md).
+
+## License
+
+[MIT](LICENSE)

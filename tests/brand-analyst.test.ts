@@ -27,7 +27,7 @@ function response(data: unknown, success = true) {
 describe('grounded brand analysis', () => {
   it('requests URL context, passes the actual brief, and accepts only retrieved sources', async () => {
     const generate = vi.fn(async () => response(analysisFixture()));
-    const analyst = createBrandAnalyst({ generate });
+    const analyst = createBrandAnalyst({ sleep: async () => {}, generate });
     const report = await analyst.research(fixtureIntake);
     expect(report.sources.map((s) => s.url)).toEqual([fixtureIntake.website]);
     const request = generate.mock.calls[0] as unknown as [
@@ -38,13 +38,17 @@ describe('grounded brand analysis', () => {
   });
   it('refuses model memory when retrieval failed or facts cite unprovided pages', async () => {
     const analyst = createBrandAnalyst({
+      sleep: async () => {},
       generate: async () => response(analysisFixture(), false),
     });
     await expect(analyst.research(fixtureIntake)).rejects.toThrow('could not be read');
     for (const citation of ['https://invented.example.org/', 'not a URL', 'campaign brief']) {
       const data = analysisFixture();
       data.facts[0].sources = [citation];
-      const unsupported = createBrandAnalyst({ generate: async () => response(data) });
+      const unsupported = createBrandAnalyst({
+        sleep: async () => {},
+        generate: async () => response(data),
+      });
       await expect(unsupported.research(fixtureIntake)).rejects.toThrow(
         'unsupported website citation',
       );
@@ -62,6 +66,7 @@ describe('grounded brand analysis', () => {
     ])
       expect(() => publicWebsite(url)).toThrow('public HTTPS');
     const analyst = createBrandAnalyst({
+      sleep: async () => {},
       generate: async () => {
         throw new Error('private-provider-detail');
       },
@@ -71,7 +76,10 @@ describe('grounded brand analysis', () => {
   it('rejects missing, duplicate or unrelated candidate assessments', async () => {
     const w = legacyWorkspace().workspace,
       research = researchFixture();
-    const analyst = createBrandAnalyst({ generate: async () => response({ partners: [] }) });
+    const analyst = createBrandAnalyst({
+      sleep: async () => {},
+      generate: async () => response({ partners: [] }),
+    });
     await expect(
       analyst.assess(research, w.candidates, w.evidence!, fixtureIntake),
     ).rejects.toThrow('cover the shortlist');
@@ -79,13 +87,14 @@ describe('grounded brand analysis', () => {
   it('does not accept truncated model output', async () => {
     const r = response(analysisFixture());
     r.candidates![0].finishReason = FinishReason.MAX_TOKENS;
-    const analyst = createBrandAnalyst({ generate: async () => r });
+    const analyst = createBrandAnalyst({ sleep: async () => {}, generate: async () => r });
     await expect(analyst.research(fixtureIntake)).rejects.toThrow('could not finish');
   });
   it('keeps response bounds enforced locally with the simpler Vertex generation schema', async () => {
     const w = legacyWorkspace().workspace;
     let sentSchema: unknown;
     const analyst = createBrandAnalyst({
+      sleep: async () => {},
       generate: async (request) => {
         sentSchema = request.config?.responseJsonSchema;
         return response({

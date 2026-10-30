@@ -87,8 +87,7 @@ verified or implied.
 
 No browser or visual QA was performed, following the user's standing instruction.
 No financial, marketing-outcome, partner-availability or real-offer validation is
-claimed. File persistence supports one local server process. No deployment,
-remote repository, multi-user access or Devpost submission has been verified.
+claimed. File persistence supports one server process. Multi-user load has not been verified.
 
 ## Demographic context verification — 30 October 2026
 
@@ -124,3 +123,9 @@ commercial availability or a campaign outcome. No browser or visual QA was run.
 Final automated acceptance passed: all 54 tests, formatting, type checking and
 production build. Partner Mix additionally checks that refreshing current pair
 context cannot rewrite the saved decision export.
+
+## Hosted verification — 31 October 2026
+
+The full sample flow passed through `npm run test:qloo:sample` using the model chain in
+`server/models.ts`: sourced research, assessment, cultural ranking, locked-partner repair and
+authenticated export. `/api/health` reported both providers configured on the hosted server.

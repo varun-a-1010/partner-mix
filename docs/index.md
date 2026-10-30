@@ -7,4 +7,5 @@
 - [Product rationale](product-rationale.md): distinction from FanFit and lessons from Alloy.
 - [Design](design.md): campaign planning board visual decisions.
 - [Verification](verification.md): checks and remaining verification limits.
+- [Devpost copy](devpost.md): submission text.
 - [Change log](log.md): implementation history.

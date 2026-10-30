@@ -1,25 +1,23 @@
 # Partner Mix
 
 Independent Qloo hackathon project for assembling sponsorship portfolios. Work on
-`main`; no remote is configured initially. Never modify Common Hours, TripRescue,
-or any submitted artifact as part of this app.
+`main`. Never modify other apps from this repo.
 
 - Follow `~/code/AGENTS.md`. No unsolicited browser or visual QA.
 - `npm run check` runs formatting, domain/API tests, type checking and production build.
-- Private local file storage lives in ignored `.data/`. A hosted release needs a
-  dedicated app storage setup; do not borrow another app's database.
+- Private file storage lives in ignored `.data/`. Ship with `~/code/dev-env/bin/qloo-ship
+partner-mix`; the standard is `~/code/qloo-submissions.md`. Never borrow another app's database.
 - Qloo only establishes cultural associations. Never imply verified reach, actual
   audience overlap, ROI, willingness to partner, prices, availability or endorsement.
 - New samples use real Qloo entities and rankings. Sample costs/activation ideas are
   illustrative, availability is unconfirmed. Older fictional samples stay labelled
   and cannot send their fabricated IDs to Qloo.
-- Secrets stay server-side and out of source control. Production credentials belong
-  in this app's Doppler project.
+- Secrets stay server-side and out of source control, in Doppler project `qloo`.
 - Start with sourced brand research and explicit strategy review before discovery.
   Gemini analyzes website/brief and partner fit; Qloo supplies cultural evidence.
   The orchestration and portfolio solver remain bounded and deterministic.
-- Local Vertex reuse from Slate is explicitly authorized. Use the runtime launcher;
-  never persist its credentials or change Slate. See docs/brand-analysis.md.
+- Vertex credentials are shared with the other Qloo entries through Doppler project `qloo`.
+  Never change Slate from here. See docs/brand-analysis.md.
 
 ## Docs
 
