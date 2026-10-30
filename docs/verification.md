@@ -104,3 +104,23 @@ preservation on partial failures, signed chart rendering, private API access and
 export context. No browser or visual QA is performed.
 
 Live demographic check passed on 30 October 2026: both example entities returned all six age bands and both gender fields in one demographics response; the repeat used no extra requests and kept its retrieval date. All 48 tests, formatting, type checking and production build passed.
+
+## Partnership exploration checks — 30 October 2026
+
+`npm run test:partnership` is an opt-in live check using only public entity IDs and
+`QLOO_API_KEY` in process memory. It uses six requests by default; `-- --city 'Los
+Angeles' --heatmap` uses eight. It checks each query shape, returned contribution
+metadata, optional geographic cells and reuse of cached retrieval dates. It does
+not call an LLM or change existing workspaces. Mocked API tests separately exercise
+ownership, allowlisted candidates, version checks, private persistence and exports.
+
+Live examples completed: Allbirds × Bon Iver returned eight artist/podcast
+suggestions in six requests. Cedric × Omaha Steaks in Los Angeles returned twelve
+artist/podcast/place suggestions and 1,141 joint geographic cells in eight requests.
+Both had explanation metadata and both reused cache entries without new requests.
+These checks establish that the implemented query paths return usable data, not
+commercial availability or a campaign outcome. No browser or visual QA was run.
+
+Final automated acceptance passed: all 54 tests, formatting, type checking and
+production build. Partner Mix additionally checks that refreshing current pair
+context cannot rewrite the saved decision export.

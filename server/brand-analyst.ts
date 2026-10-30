@@ -1,3 +1,4 @@
+import { pairSummary, type PairReport } from '../shared/partnership';
 import {
   GoogleGenAI,
   ThinkingLevel,
@@ -30,6 +31,7 @@ export interface BrandAnalyst {
     candidates: Candidate[],
     evidence: Evidence,
     intake: BrandIntake,
+    partnerships?: Record<string, PairReport>,
   ): Promise<PartnerAssessment[]>;
 }
 export type AnalystDiagnostic = {
@@ -247,7 +249,7 @@ Do not claim you read a page that returned an access/queue/error screen.`,
           .map((u) => `Could not verify retrieval of ${u}. No facts from that page are accepted.`),
       };
     },
-    async assess(research, candidates, evidence, intake) {
+    async assess(research, candidates, evidence, intake, partnerships) {
       const { data } = await call(
         assessmentSchema,
         `Assess the CREATIVE AND EDITORIAL FIT of these discovered partners. Commercial feasibility is handled separately by the app's entered offers and deterministic solver.
@@ -255,6 +257,8 @@ Planner's original campaign brief (authoritative requirements): ${JSON.stringify
 Brand research: ${JSON.stringify({ analysis: research.analysis, sources: research.sources })}
 Partners (descriptions are provider metadata, not independently verified): ${JSON.stringify(candidates.map((c) => ({ id: c.id, name: c.name, kind: c.kind, description: c.description })))}
 Cultural comparisons: ${JSON.stringify(evidence.comparisons)}
+Optional pair exploration: ${JSON.stringify(candidates.flatMap((c) => (c.entityId && partnerships?.[c.entityId] ? [pairSummary(partnerships[c.entityId])] : [])))}
+Use supplied shared interests and joint suggestions to make the activation specific to this campaign. Activation names must come from the supplied Qloo results. Treat formats and suitability as proposals; joint inputs do not measure shared fans.
 The artist candidates are music artists. The campaign is a planning proposal, not an actual partnership.
 For EVERY candidate return its exact candidateId, a campaign-specific role, concise rationale, plausible activation and 1–3 CREATIVE concerns. Keep each field under 600 characters.
 Disposition: investigate if there is a defensible creative connection; hold if basic fit lacks evidence; poor-fit if the available evidence contradicts the brief.

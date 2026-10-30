@@ -1,3 +1,5 @@
+import { createPairReport } from './partnership';
+import type { PairEntity, PairOptions, PairReport } from '../shared/partnership';
 import { parseDemographics } from './audience';
 import type { AudienceProfile } from '../shared/audience';
 import { randomUUID } from 'node:crypto';
@@ -13,6 +15,7 @@ export type Insight = {
   results: { entity: Entity; rank: number; contributingSeedIds: string[] }[];
 };
 export interface Qloo {
+  partnership(a: PairEntity, b: PairEntity, options: PairOptions): Promise<PairReport>;
   demographics(ids: string[]): Promise<AudienceProfile[]>;
   status: 'configured' | 'not-connected';
   search(query: string, kind: SeedKind): Promise<Entity[]>;
@@ -107,6 +110,7 @@ export function createQloo(
   }
   return {
     status: key ? 'configured' : 'not-connected',
+    partnership: (a, b, options) => createPairReport(get, a, b, options),
     async demographics(ids) {
       const requested = [
         ...new Set(

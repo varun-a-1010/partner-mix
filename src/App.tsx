@@ -87,9 +87,11 @@ export function App() {
         ? 'Reading the brand website and interpreting your campaign brief…'
         : path === '/compare'
           ? 'Comparing cultural evidence and preparing packages…'
-          : path === '/audience'
-            ? 'Loading age and gender context from Qloo…'
-            : 'Saving campaign…',
+          : path === '/partnership'
+            ? 'Exploring shared interests and joint activations with Qloo…'
+            : path === '/audience'
+              ? 'Loading age and gender context from Qloo…'
+              : 'Saving campaign…',
     );
     setError('');
     setNotice('');
@@ -109,9 +111,11 @@ export function App() {
               ? 'Decision saved. Open the decision brief to review or export it.'
               : path === '/compare'
                 ? 'Comparison saved. Add or update offers to see feasible packages.'
-                : path === '/audience'
-                  ? 'Audience context saved. Use it alongside the campaign goal.'
-                  : 'Saved. Package options now use the updated inputs.',
+                : path === '/partnership'
+                  ? 'Partnership exploration saved. Review the creative directions and next steps.'
+                  : path === '/audience'
+                    ? 'Audience context saved. Use it alongside the campaign goal.'
+                    : 'Saved. Package options now use the updated inputs.',
       );
       return true;
     } catch (e) {
@@ -389,6 +393,10 @@ export function App() {
               busy={!!busy}
               connected={w.provider === 'configured'}
               onRefresh={() => void mutate('/audience', {})}
+              reports={w.partnerships}
+              onExplore={(partnerId, options) =>
+                void mutate('/partnership', { partnerId, options })
+              }
             />
           )}
           {tab === 'partners' && (

@@ -1,3 +1,4 @@
+import { PairResults } from './Partnership';
 import { Check, Download, LockKeyhole, RefreshCw } from 'lucide-react';
 import type { Candidate, WorkspaceView } from '../shared/model';
 import { isLegacySample, money } from '../shared/model';
@@ -447,6 +448,12 @@ export function Decision({
                   : `Availability ${c.offer.availability}`}
               </small>
               <PartnerCase candidate={c} researchId={selection.research?.id} />
+              {c.entityId && selection.partnerships?.[c.entityId] && (
+                <details>
+                  <summary>Saved partnership exploration</summary>
+                  <PairResults report={selection.partnerships[c.entityId]} />
+                </details>
+              )}
             </div>
             <button className="text-button" onClick={() => edit(c.id)}>
               Review offer

@@ -5,7 +5,7 @@
     {
       "path": "shared/model.ts",
       "role": "Domain contracts and display helpers",
-      "depends_on": ["shared/audience.ts"]
+      "depends_on": ["shared/audience.ts", "shared/partnership.ts"]
     },
     {
       "path": "shared/validation.ts",
@@ -30,17 +30,27 @@
     {
       "path": "server/qloo.ts",
       "role": "Bounded server-only Qloo adapter",
-      "depends_on": ["shared/model.ts", "server/store.ts", "server/audience.ts"]
+      "depends_on": [
+        "shared/model.ts",
+        "server/store.ts",
+        "server/audience.ts",
+        "server/partnership.ts"
+      ]
     },
     {
       "path": "server/workflow.ts",
       "role": "Discover and compare the complete shortlist",
-      "depends_on": ["server/qloo.ts", "server/solver.ts", "shared/audience.ts"]
+      "depends_on": [
+        "server/qloo.ts",
+        "server/solver.ts",
+        "shared/audience.ts",
+        "shared/partnership.ts"
+      ]
     },
     {
       "path": "server/solver.ts",
       "role": "Hard constraints, ordinal portfolio heuristic and evidence-aware export",
-      "depends_on": ["shared/model.ts"]
+      "depends_on": ["shared/model.ts", "shared/partnership.ts"]
     },
     {
       "path": "server/app.ts",
@@ -52,7 +62,8 @@
         "server/solver.ts",
         "server/sample.ts",
         "server/brand-workflow.ts",
-        "server/brand-analyst.ts"
+        "server/brand-analyst.ts",
+        "shared/partnership.ts"
       ]
     },
     {
@@ -74,7 +85,7 @@
     {
       "path": "src/views.tsx",
       "role": "Package comparison, evidence matrix and decision brief",
-      "depends_on": ["shared/model.ts", "src/forms.tsx"]
+      "depends_on": ["shared/model.ts", "src/forms.tsx", "src/Partnership.tsx"]
     },
     {
       "path": "scripts/test-qloo-live.ts",
@@ -89,7 +100,7 @@
     {
       "path": "server/brand-analyst.ts",
       "role": "Vertex Gemini URL-context research and structured partner assessment",
-      "depends_on": ["shared/brand.ts", "server/store.ts"]
+      "depends_on": ["shared/brand.ts", "server/store.ts", "shared/partnership.ts"]
     },
     {
       "path": "server/brand-workflow.ts",
@@ -119,12 +130,37 @@
     {
       "path": "src/Audience.tsx",
       "role": "Signed demographic comparison, missing coverage and query receipts",
-      "depends_on": ["shared/audience.ts"]
+      "depends_on": ["shared/audience.ts", "src/Partnership.tsx"]
     },
     {
       "path": "scripts/test-audience-live.ts",
       "role": "Opt-in three-request demographic coverage and cache check",
       "depends_on": ["server/qloo.ts", "server/audience.ts"]
+    },
+    {
+      "path": "shared/partnership.ts",
+      "role": "Pair exploration contracts, contribution labels, interpretation context and exports",
+      "depends_on": []
+    },
+    {
+      "path": "server/partnership.ts",
+      "role": "Bounded joint recommendations, tastes, directional associations and optional geographic cells",
+      "depends_on": ["shared/partnership.ts", "server/store.ts"]
+    },
+    {
+      "path": "src/Partnership.tsx",
+      "role": "Pair exploration controls, shared interests, joint activation cards and request citations",
+      "depends_on": ["shared/partnership.ts", "src/Geography.tsx"]
+    },
+    {
+      "path": "src/Geography.tsx",
+      "role": "Geohash cell geography and returned place pins without external tiles",
+      "depends_on": ["shared/partnership.ts"]
+    },
+    {
+      "path": "scripts/test-partnership-live.ts",
+      "role": "Opt-in six to eight request live pair workflow",
+      "depends_on": ["server/qloo.ts"]
     }
   ]
 }

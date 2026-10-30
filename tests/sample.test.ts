@@ -34,6 +34,9 @@ function mockQloo() {
   );
   const qloo: Qloo = {
     status: 'configured',
+    partnership: async () => {
+      throw new Error('Unused pair request');
+    },
     demographics: async () => [],
     search: vi.fn(async (query, kind) => refs.filter((r) => r.name === query && r.kind === kind)),
     insights: vi.fn(async (kind, seedIds, ids) => {

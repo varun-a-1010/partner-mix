@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm test && npm run build",
-    "test:audience": "tsx scripts/test-audience-live.ts"
+    "test:audience": "tsx scripts/test-audience-live.ts",
+    "test:partnership": "tsx scripts/test-partnership-live.ts"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.3",

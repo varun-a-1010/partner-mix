@@ -181,7 +181,7 @@ describe('campaign portfolio decisions', () => {
   });
 });
 
-it('keeps demographic context out of package ordering and exports the saved decision snapshot', () => {
+it('keeps audience and exploration context out of ordering and exports their saved decision snapshot', () => {
   const w = demo(),
     p = solve(w).options[0];
   const selected = w.candidates.filter((c) => p.partnerIds.includes(c.id));
@@ -196,6 +196,26 @@ it('keeps demographic context out of package ordering and exports the saved deci
       request: { path: '/v2/insights', params: { 'filter.type': 'urn:demographics' } },
     })),
   };
+  const partner = selected[0];
+  w.partnerships = {
+    [partner.entityId!]: {
+      id: randomUUID(),
+      createdAt: '2026-10-30T00:00:00Z',
+      a: { id: randomUUID(), name: w.brief.brand, kind: 'brand' },
+      b: { id: partner.entityId!, name: partner.name, kind: partner.kind },
+      options: { includeHeatmap: false },
+      directions: [],
+      tastes: {
+        shared: [{ id: 'urn:tag:genre:folk', name: 'Saved folk interest', rank: 1, queryId: 'P1' }],
+        aOnly: [],
+        bOnly: [],
+        queries: ['P1', 'P2'],
+        available: [true, true],
+      },
+      activations: [],
+      ledger: [],
+    },
+  };
   expect(inputFingerprint(w)).toBe(fingerprint);
   expect(solve(w).options[0]).toEqual(p);
   w.selection = {
@@ -206,11 +226,15 @@ it('keeps demographic context out of package ordering and exports the saved deci
     research: structuredClone(w.research),
     intake: structuredClone(w.intake),
     audience: structuredClone(w.audience),
+    partnerships: structuredClone(w.partnerships),
     chosenAt: new Date().toISOString(),
     inputFingerprint: fingerprint,
   };
   for (const profile of w.audience.profiles) profile.age['55_and_older'] = 0.99;
+  w.partnerships[partner.entityId!].tastes.shared[0].name = 'Refreshed interest';
   const exported = exportBrief(w);
   expect(exported).toContain('+0.11');
   expect(exported).not.toContain('+0.99');
+  expect(exported).toContain('Saved folk interest');
+  expect(exported).not.toContain('Refreshed interest');
 });

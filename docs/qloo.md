@@ -94,3 +94,41 @@ At the maximum 24 candidates, this adds at most one brand lookup and four demogr
 batches to a comparison. The eight-candidate sample adds at most three requests.
 
 Official reference: [Qloo demographic insights](https://github.com/qloo/docs-public/blob/main/reference/demographics-use-case.md).
+
+## Partnership exploration — 30 October 2026
+
+After choosing a real candidate, **Explore this partnership** runs a bounded set of
+Qloo requests for that exact pair. It retrieves two taste-tag lists, association in
+both directions, and joint artist/podcast suggestions with explainability. A city
+adds place suggestions; a separate geographic option adds one joint heatmap. The
+core uses six calls, a city uses seven, and a city plus heatmap uses eight; at most
+two are concurrent. The existing server-only host, response limits, timeout and
+credential-scoped cache apply. No commercial brief or private notes go to Qloo.
+
+The server filters operational/venue attributes and a small explicit generic-tag
+list, folds name spelling differences, then shows up to ten shared or distinctive
+tags. Distinctive means absent from the other returned filtered list, not exclusive
+to that audience or additional people reached. If either taste query fails, the
+comparison stays unavailable rather than calling every remaining tag distinctive.
+Association values are shown separately, without a synthesized fit score.
+
+Joint suggestions retain Qloo's returned per-input explanation weights. The UI
+normalizes the two known nonnegative weights and labels a result “Both inputs
+contribute” when each reaches 25%; otherwise it labels the stronger input.
+Missing/incomplete explanation metadata remains unavailable. These are explanation
+contributions, not audience percentages or a measured intersection. Activation
+formats are visible proposals based on the returned entity type, and still require
+editorial, commercial and rights review. Expanding a source link opens the request
+ledger with its parameters, result count, status and original retrieval date.
+
+An optional geographic view renders actual geohash cell boundaries colored by
+`affinity_rank`, with returned place coordinates as pins. It uses no street tiles,
+third-party map script or guessed neighborhood names. It shows the coordinate
+extent and warns that Qloo's returned region can exceed the requested city. Missing
+cells are not filled. A geographic request is never made by default.
+
+The saved pair report is separate from demographic context and cultural shortlist
+ordering. Later LLM proposal research/assessment can use its filtered interests,
+activations and receipts; heatmap arrays are omitted from that model context.
+The exploration itself requires no LLM call and does not rewrite commercial
+judgments automatically. Every result is a cultural input to the user's decision.

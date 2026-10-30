@@ -1,3 +1,4 @@
+import type { PairReport } from './partnership';
 import type { AudienceContext } from './audience';
 import type { BrandIntake, BrandResearch, PartnerAssessment } from './brand';
 export const seedKinds = ['brand', 'artist', 'podcast', 'movie', 'book'] as const;
@@ -91,6 +92,7 @@ export type Planning = {
 };
 export type Selection = {
   audience?: AudienceContext;
+  partnerships?: Record<string, PairReport>;
   package: Package;
   partners: Candidate[];
   brief: Brief;
@@ -109,6 +111,7 @@ export type Revision = {
 };
 export type Workspace = {
   audience?: AudienceContext;
+  partnerships?: Record<string, PairReport>;
   id: string;
   version: number;
   createdAt: string;

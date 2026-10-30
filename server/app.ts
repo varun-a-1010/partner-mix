@@ -16,7 +16,8 @@ import { hash, newWorkspace, sameHash } from './data';
 import { AppError, FileStore } from './store';
 import { createQloo, type Qloo } from './qloo';
 import { exportBrief, inputFingerprint, solve } from './solver';
-import { runComparison, loadAudienceContext } from './workflow';
+import { runComparison, loadAudienceContext, explorePartnership } from './workflow';
+import { pairOptionsSchema } from '../shared/partnership';
 import { prepareSample, addSampleEstimates } from './sample';
 import { createBrandAnalyst, type BrandAnalyst } from './brand-analyst';
 import { approveBrand, researchBrand } from './brand-workflow';
@@ -134,6 +135,7 @@ export async function buildApp(
             current.research = result.research;
             current.brief = result.brief;
             current.audience = undefined;
+            current.partnerships = undefined;
           }),
         );
       } finally {
@@ -247,6 +249,7 @@ export async function buildApp(
         )
           throw new AppError(422, 'This Qloo entity is already on the shortlist.');
         w.audience = undefined;
+        if (c.entityId && w.partnerships) delete w.partnerships[c.entityId];
         c.entityId = input.entity.entityId;
         c.name = input.entity.name;
         c.description = input.entity.description;
@@ -260,6 +263,8 @@ export async function buildApp(
       const id = (r.params as { candidate: string }).candidate;
       if (w.candidates.find((c) => c.id === id)?.locked)
         throw new AppError(422, 'Unlock this partner before removing them.');
+      const removed = w.candidates.find((c) => c.id === id);
+      if (removed?.entityId && w.partnerships) delete w.partnerships[removed.entityId];
       w.candidates = w.candidates.filter((c) => c.id !== id);
     }),
   );
@@ -297,6 +302,7 @@ export async function buildApp(
           result.candidates,
           result.evidence!,
           result.intake!,
+          result.partnerships,
         );
         for (const c of result.candidates)
           c.assessment = assessments.find((a) => a.candidateId === c.id);
@@ -340,6 +346,34 @@ export async function buildApp(
       }
     },
   );
+  app.post(
+    '/api/w/:id/partnership',
+    { config: { rateLimit: { max: 6, timeWindow: '1 minute' } } },
+    async (r) => {
+      const w = await owner(r);
+      const {
+        version,
+        partnerId,
+        options: pairOptions,
+      } = versionBody
+        .extend({ partnerId: z.string().uuid(), options: pairOptionsSchema })
+        .parse(r.body);
+      if (w.version !== version)
+        throw new AppError(409, 'The campaign changed. Reload before exploring.');
+      if (active.has(w.id)) throw new AppError(409, 'A campaign analysis is already running.');
+      active.add(w.id);
+      try {
+        const report = await explorePartnership(w, qloo, partnerId, pairOptions);
+        return view(
+          await store.update(w.id, version, (current) => {
+            (current.partnerships ??= {})[report.b.id] = report;
+          }),
+        );
+      } finally {
+        active.delete(w.id);
+      }
+    },
+  );
   app.post('/api/w/:id/select', async (r) => {
     const { packageId } = z.object({ packageId: z.string().min(1).max(30) }).parse(r.body);
     return mutate(r, (w) => {
@@ -349,6 +383,7 @@ export async function buildApp(
       w.selection = {
         package: p,
         audience: structuredClone(w.audience),
+        partnerships: structuredClone(w.partnerships),
         partners: w.candidates.filter((c) => p.partnerIds.includes(c.id)),
         brief: structuredClone(w.brief),
         evidence: structuredClone(w.evidence),

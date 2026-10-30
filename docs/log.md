@@ -1,5 +1,19 @@
 # Change log
 
+## 2026-10-30 — Partnership exploration
+
+- Passed all 54 tests, formatting, types and production build; live pair
+  requests and cache reuse succeeded. See the verification reference.
+
+- Added pair-specific shared/distinctive taste lists, bidirectional associations,
+  joint music/podcast/place suggestions and per-input explanation weights.
+- Added an event-city option and an optional joint geographic affinity grid with
+  real geohash boundaries and returned place pins. No basemap network is required.
+- Added linked query receipts, source dates, explicit partial failures, saved
+  reports and exports; later proposal research can use the cultural context.
+- Kept pair exploration on demand for a chosen candidate; it does not add calls to
+  every candidate during discovery or manufacture an overall fit percentage.
+
 ## 2026-10-30
 
 - Added real Qloo age/gender profiles, batched with per-entity attribution, provenance

@@ -1,3 +1,4 @@
+import { createPairReport } from '../server/partnership';
 import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtemp, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -139,6 +140,9 @@ describe('private campaign API', () => {
     let calls = 0;
     const { app, w, headers } = await setup({
       status: 'configured',
+      partnership: async () => {
+        throw new Error('Unused pair request');
+      },
       demographics: async () => [],
       search: async () => {
         calls++;
@@ -168,6 +172,9 @@ describe('private campaign API', () => {
     });
     const qloo: Qloo = {
       status: 'configured',
+      partnership: async () => {
+        throw new Error('Unused pair request');
+      },
       demographics: async () => [],
       search: async () => [],
       insights: async (kind, seedIds, ids = []) => {
@@ -212,6 +219,9 @@ describe('private campaign API', () => {
   it('persists private audience context without changing package order or accepting unowned requests', async () => {
     const qloo: Qloo = {
       status: 'configured',
+      partnership: async () => {
+        throw new Error('Unused pair request');
+      },
       search: async () => [],
       insights: async () => {
         throw new Error('unused');
@@ -270,5 +280,68 @@ describe('private campaign API', () => {
         })
       ).statusCode,
     ).toBe(409);
+  });
+  it('explores only a campaign partner, persists receipts, and rejects stale or unowned requests', async () => {
+    const qloo: Qloo = {
+      status: 'configured',
+      search: async () => [],
+      insights: async () => {
+        throw new Error('unused');
+      },
+      demographics: async () => [],
+      partnership: async (a, b, options) =>
+        createPairReport(
+          async () => ({
+            data: { results: { tags: [], entities: [] } },
+            fetchedAt: '2026-10-30T00:00:00Z',
+          }),
+          a,
+          b,
+          options,
+        ),
+    };
+    const { app, w, headers, store } = await setup(qloo);
+    const ready = await store.update(w.id, w.version, (current) => {
+      current.demo = false;
+      current.audience = {
+        subject: { id: randomUUID().toUpperCase(), name: current.brief.brand },
+        profiles: [],
+      };
+    });
+    const partnerId = ready.candidates.find((c) => c.entityId)!.entityId!;
+    const payload = { version: ready.version, partnerId, options: { includeHeatmap: false } };
+    const path = `/api/w/${w.id}/partnership`;
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: path,
+          headers: { host: headers.host, origin: headers.origin },
+          payload,
+        })
+      ).statusCode,
+    ).toBe(404);
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: path,
+          headers,
+          payload: { ...payload, partnerId: randomUUID() },
+        })
+      ).statusCode,
+    ).toBe(404);
+    const response = await app.inject({ method: 'POST', url: path, headers, payload });
+    expect(response.statusCode).toBe(200);
+    const next = response.json<WorkspaceView>();
+    const report = next.partnerships?.[partnerId.toUpperCase()];
+    expect(report?.ledger).toHaveLength(6);
+    expect(report?.a.id).toBe(ready.audience?.subject?.id);
+    expect(next.candidates).toEqual(ready.candidates);
+    expect(next.evidence).toEqual(ready.evidence);
+    expect((await store.get(w.id))?.partnerships).toEqual(next.partnerships);
+    expect((await app.inject({ method: 'POST', url: path, headers, payload })).statusCode).toBe(
+      409,
+    );
   });
 });

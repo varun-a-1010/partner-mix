@@ -1,3 +1,4 @@
+import type { PairOptions } from '../shared/partnership';
 import { collectAudiences } from './audience';
 import { randomUUID } from 'node:crypto';
 import type { Comparison, StoredWorkspace } from '../shared/model';
@@ -146,5 +147,37 @@ export async function loadAudienceContext(w: StoredWorkspace, qloo: Qloo) {
     subject,
     w.audience,
     subjectNote,
+  );
+}
+
+export async function explorePartnership(
+  w: StoredWorkspace,
+  qloo: Qloo,
+  partnerId: string,
+  options: PairOptions,
+) {
+  if (isLegacySample(w) || !brandReady(w))
+    throw new AppError(422, 'Review the brand strategy before exploring a real partnership.');
+  const candidate = w.candidates.find((c) => c.entityId?.toUpperCase() === partnerId.toUpperCase());
+  if (!candidate?.entityId)
+    throw new AppError(404, 'Choose a Qloo-linked partner from this campaign.');
+  if (qloo.status !== 'configured') throw new AppError(503, 'Qloo is not connected.');
+  let subject = w.audience?.subject?.name === w.brief.brand ? w.audience.subject : undefined;
+  if (!subject) {
+    const normalize = (s: string) => s.normalize('NFKC').trim().toLowerCase();
+    const matches = (await qloo.search(w.brief.brand, 'brand')).filter(
+      (e) => normalize(e.name) === normalize(w.brief.brand),
+    );
+    if (matches.length !== 1)
+      throw new AppError(
+        422,
+        'The campaign brand is ambiguous or missing in Qloo. Try its exact brand name in the reviewed brand brief.',
+      );
+    subject = { id: matches[0].entityId, name: matches[0].name };
+  }
+  return qloo.partnership(
+    { ...subject, kind: 'brand' },
+    { id: candidate.entityId, name: candidate.name, kind: candidate.kind },
+    options,
   );
 }

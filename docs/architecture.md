@@ -90,3 +90,20 @@ a nonlegacy sample and reviewed brand strategy. It uses the existing active-work
 fence and atomically saves after a version recheck. Discovery/comparison also records
 context. Brand reanalysis and candidate linking invalidate its binding. A selection
 copies its context; exporting a saved selection uses that copy, not newer profiles.
+
+## Partnership exploration storage and jobs
+
+`shared/partnership.ts` owns pair contracts and export formatting;
+`server/partnership.ts` orchestrates six to eight bounded Qloo queries.
+`src/Partnership.tsx` presents the pair and `src/Geography.tsx` draws optional
+geohash cells. Optional `Workspace.partnerships` maps candidate entity IDs to saved
+reports, retaining compatibility with existing files. Failed individual steps are
+visible while successful sections remain usable. Total failure preserves saved
+state. Origin, ownership, current-version and existing job/concurrency gates apply.
+
+`POST /api/w/:id/partnership` accepts only a linked candidate from the reviewed
+campaign. The campaign brand must have one exact Qloo brand match; no arbitrary
+client-provided seed metadata is trusted for the new pair. Reanalysis clears reports,
+relinking/removing a partner clears its report. Decisions snapshot reports at
+selection, and saved-decision views and exports use that snapshot. Pair context
+alone does not change the solver fingerprint or package order.

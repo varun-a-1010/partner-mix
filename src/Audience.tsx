@@ -1,3 +1,5 @@
+import { PartnershipExplorer } from './Partnership';
+import type { PairOptions, PairReport } from '../shared/partnership';
 import { useState } from 'react';
 import {
   ageBands,
@@ -156,12 +158,16 @@ export function AudienceExplorer({
   busy,
   connected,
   onRefresh,
+  reports,
+  onExplore,
 }: {
   context?: AudienceContext;
   partners: AudienceSubject[];
   busy: boolean;
   connected: boolean;
   onRefresh: () => void;
+  reports?: Record<string, PairReport>;
+  onExplore: (partnerId: string, options: PairOptions) => void;
 }) {
   const [selected, setSelected] = useState('');
   const partner = partners.find((p) => p.id === selected) ?? partners[0];
@@ -184,6 +190,16 @@ export function AudienceExplorer({
         </button>
       </div>
       <AudienceComparison context={context} partner={partner} />
+      <PartnershipExplorer
+        report={
+          reports?.[partner.id]?.a.id === context?.subject?.id ? reports?.[partner.id] : undefined
+        }
+        aName={context?.subject?.name ?? 'The campaign brand'}
+        bName={partner.name}
+        busy={busy}
+        enabled={connected && !!context?.subject}
+        onExplore={(options) => onExplore(partner.id, options)}
+      />
       <p className="hint">
         Read these signals alongside your campaign audience and objective. A different audience can
         be an opportunity to expand; demographic similarity does not decide the mix.

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { pairMarkdown } from '../shared/partnership';
 import { audienceMarkdown } from '../shared/audience';
 import type {
   Candidate,
@@ -263,6 +264,7 @@ export function exportBrief(w: Workspace): string {
       research: w.selection.research,
       intake: w.selection.intake,
       audience: w.selection.audience,
+      partnerships: w.selection.partnerships,
     };
   const lines = [
     `# ${w.brief.campaign}`,
@@ -319,7 +321,10 @@ export function exportBrief(w: Workspace): string {
       );
     }
     for (const c of w.selection.partners) {
-      if (c.entityId) lines.push(...audienceMarkdown(w.audience, { id: c.entityId, name: c.name }));
+      if (c.entityId) {
+        lines.push(...audienceMarkdown(w.audience, { id: c.entityId, name: c.name }));
+        lines.push(...pairMarkdown(w.partnerships?.[c.entityId]));
+      }
     }
     lines.push(
       '## Why this mix',
