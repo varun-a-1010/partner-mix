@@ -41,7 +41,7 @@ export async function buildApp(
   const qloo = options.qloo ?? createQloo();
   const analyst = options.analyst ?? createBrandAnalyst();
   const active = new Set<string>();
-  const app = Fastify({ logger: false, bodyLimit: 65_536, trustProxy: false });
+  const app = Fastify({ logger: false, bodyLimit: 65_536, trustProxy: '127.0.0.1' });
   await app.register(cookie);
   await app.register(rateLimit, { max: 180, timeWindow: '1 minute' });
   app.addHook('onRequest', async (request, reply) => {

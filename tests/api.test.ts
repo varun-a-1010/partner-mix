@@ -38,6 +38,21 @@ async function setup(qloo?: Qloo) {
   ).json<WorkspaceView>();
   return { app, store, w, headers: { ...headers, cookie }, dir, created };
 }
+describe('behind the local proxy', () => {
+  it('limits each forwarded client separately', async () => {
+    const { app, headers } = await setup();
+    const create = (client: string) =>
+      app.inject({
+        method: 'POST',
+        url: '/api/workspaces',
+        headers: { ...headers, 'x-forwarded-for': client },
+        payload: { demo: false },
+      });
+    for (let i = 0; i < 12; i++) expect((await create('203.0.113.1')).statusCode).toBe(201);
+    expect((await create('203.0.113.1')).statusCode).toBe(429);
+    expect((await create('203.0.113.2')).statusCode).toBe(201);
+  });
+});
 describe('private campaign API', () => {
   it('requires the campaign cookie, removes server secrets and persists across reads', async () => {
     const { app, w, headers, store, created, dir } = await setup();
