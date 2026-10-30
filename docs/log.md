@@ -1,5 +1,10 @@
 # Change log
 
+## 2026-10-31 — Hosting preparation
+
+- Trusted the local nginx proxy so rate limits apply per forwarded client instead
+  of one shared `127.0.0.1` bucket. Added a regression test. Not yet deployed.
+
 ## 2026-10-30 — Partnership exploration
 
 - Passed all 54 tests, formatting, types and production build; live pair
