@@ -161,6 +161,11 @@
       "path": "scripts/test-partnership-live.ts",
       "role": "Opt-in six to eight request live pair workflow",
       "depends_on": ["server/qloo.ts"]
+    },
+    {
+      "path": "server/models.ts",
+      "role": "Model chain and fallback across rate limits and invalid output",
+      "depends_on": []
     }
   ]
 }
