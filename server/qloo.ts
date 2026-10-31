@@ -42,10 +42,39 @@ function parseEntity(raw: unknown, kind: SeedKind): Entity | null {
     kind,
   };
 }
+const wait = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
+const MAX_ATTEMPTS = 4;
+
+/** Calls share a pace and retry, so several people at once slow each other down instead of failing. */
 export function createQloo(
-  options: { apiKey?: string; fetch?: typeof fetch; timeoutMs?: number } = {},
+  options: {
+    apiKey?: string;
+    fetch?: typeof fetch;
+    timeoutMs?: number;
+    paceMs?: number;
+    retryMs?: number;
+  } = {},
 ): Qloo {
   const key = options.apiKey?.trim();
+  const paceMs = options.paceMs ?? 110;
+  const retryMs = options.retryMs ?? 500;
+  let nextSlot = 0;
+  async function send(url: URL) {
+    for (let attempt = 1; ; attempt++) {
+      const now = Date.now();
+      const start = Math.max(now, nextSlot);
+      nextSlot = start + paceMs;
+      if (start > now) await wait(start - now);
+      const response = await (options.fetch ?? fetch)(url, {
+        headers: { 'X-Api-Key': key!, Accept: 'application/json' },
+        redirect: 'error',
+        signal: AbortSignal.timeout(options.timeoutMs ?? 12_000),
+      });
+      const busy = response.status === 429 || response.status >= 500;
+      if (!busy || attempt === MAX_ATTEMPTS) return response;
+      await wait(retryMs * 2 ** (attempt - 1));
+    }
+  }
   const cache = new Map<
     string,
     { data: Record<string, unknown>; fetchedAt: string; expires: number }
@@ -58,11 +87,7 @@ export function createQloo(
     const cached = cache.get(url.href);
     if (cached && cached.expires > Date.now()) return cached;
     try {
-      const response = await (options.fetch ?? fetch)(url, {
-        headers: { 'X-Api-Key': key, Accept: 'application/json' },
-        redirect: 'error',
-        signal: AbortSignal.timeout(options.timeoutMs ?? 12_000),
-      });
+      const response = await send(url);
       if (response.status === 429)
         throw new AppError(503, 'Qloo is rate limited. Try again later.');
       if ([401, 403].includes(response.status))

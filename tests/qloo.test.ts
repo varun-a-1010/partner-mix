@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createQloo, QLOO_ORIGIN } from '../server/qloo';
 import { randomUUID } from 'node:crypto';
 
@@ -113,5 +113,22 @@ describe('Qloo boundary', () => {
     const results = await provider.search('Known', 'podcast');
     expect(results.map((e) => e.name)).toEqual(['Known Podcast']);
     expect(results[0].entityId).toBe(id.toUpperCase());
+  });
+
+  it('retries a rate limit before giving up', async () => {
+    const replies = [
+      new Response('', { status: 429 }),
+      new Response('', { status: 503 }),
+      new Response(JSON.stringify({ results: [] }), { status: 200 }),
+    ];
+    const fetcher = vi.fn(async () => replies.shift()!);
+    const qloo = createQloo({
+      apiKey: 'k',
+      fetch: fetcher as unknown as typeof fetch,
+      paceMs: 0,
+      retryMs: 0,
+    });
+    await qloo.search('Radiohead', 'artist').catch(() => undefined);
+    expect(fetcher).toHaveBeenCalledTimes(3);
   });
 });

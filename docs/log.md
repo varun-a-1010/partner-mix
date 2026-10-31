@@ -12,6 +12,7 @@
 - Deployed to Motif at partner-mix.slate-app.online and published the repository under MIT.
 - Replaced the Allbirds sample with a hypothetical Topgolf first-visit campaign, closer to live
   entertainment and fan culture. Older saved samples stay labelled as hypothetical.
+- Qloo calls now share a pace and retry, because a rate limit during discovery used to end the run.
 - Stopped one mislabelled citation from failing a whole brand analysis, which hit the Topgolf sample
   about one run in three. A website claim citing the brief is now labelled as the brief, a claim
   citing an unread page is dropped and counted, and the analysis only fails if no sourced claim is
