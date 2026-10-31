@@ -10,7 +10,7 @@ import {
   type AnalystDiagnostic,
   type BrandAnalyst,
 } from '../server/brand-analyst';
-import { allbirdsIntake } from '../server/sample';
+import { sampleIntake } from '../server/sample';
 import { buildApp } from '../server/app';
 import { FileStore } from '../server/store';
 import type { WorkspaceView } from '../shared/model';
@@ -105,7 +105,7 @@ try {
     current = r.json<WorkspaceView>();
   }
   console.error('Checking sourced brand research…');
-  await change('/research', { intake: allbirdsIntake });
+  await change('/research', { intake: sampleIntake });
   assert.equal(current.candidates.length, 0);
   assert(current.research!.sources.length > 0);
   assert(
@@ -193,8 +193,8 @@ try {
         at: new Date().toISOString(),
         sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
         flow: sample
-          ? 'Allbirds hypothetical sample: website → reviewed strategy → Qloo → partner assessment → mix → repair → export'
-          : 'Empty campaign with Allbirds hypothetical brief',
+          ? 'Topgolf hypothetical sample: website → reviewed strategy → Qloo → partner assessment → mix → repair → export'
+          : 'Empty campaign with Topgolf hypothetical brief',
         qlooCalls: calls,
         model: current.research!.model,
         modelGenerations: 2,
@@ -225,7 +225,7 @@ try {
         },
         privateApiAndExportChecked: true,
         commercialInputs:
-          'Campaign, prices, deliverables and availability edits are hypothetical. No relationship with Allbirds or the partners, real offer, demographic or campaign result is claimed.',
+          'Campaign, prices, deliverables and availability edits are hypothetical. No relationship with Topgolf or the partners, real offer, demographic or campaign result is claimed.',
         cleanup: 'Temporary workspace removed; existing user campaigns untouched.',
       },
       null,

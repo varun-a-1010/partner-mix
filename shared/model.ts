@@ -117,7 +117,11 @@ export type Workspace = {
   createdAt: string;
   updatedAt: string;
   demo: boolean;
-  sample?: { source: 'qloo'; generatedAt: string; scenario?: 'allbirds-walking' };
+  sample?: {
+    source: 'qloo';
+    generatedAt: string;
+    scenario?: 'allbirds-walking' | 'topgolf-first-swing';
+  };
   intake?: BrandIntake;
   research?: BrandResearch;
   brief: Brief;
@@ -138,8 +142,8 @@ export const isLegacySample = (w: Workspace) => w.demo && w.sample?.source !== '
 export const sampleDescription = (w: Workspace) =>
   isLegacySample(w)
     ? 'Fictional sample campaign. Partners, offers and rankings are illustrative.'
-    : w.sample?.scenario === 'allbirds-walking'
-      ? 'Allbirds is a real brand. This is an independent, hypothetical campaign. Review sourced brand research before discovering real partners. Example costs and activation ideas are illustrative; availability is unconfirmed.'
+    : w.sample?.scenario
+      ? `${w.brief.brand} is a real brand. This is an independent, hypothetical campaign. Review sourced brand research before discovering real partners. Example costs and activation ideas are illustrative; availability is unconfirmed.`
       : 'Older sample with illustrative brand and commercial inputs. Complete the brand research or open the new Allbirds example.';
 export const emptyOffer = (): Offer => ({
   amount: null,

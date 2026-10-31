@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { buildApp } from '../server/app';
 import { newWorkspace } from '../server/data';
 import { createQloo, type Qloo } from '../server/qloo';
-import { allbirdsIntake } from '../server/sample';
+import { sampleIntake } from '../server/sample';
 import { FileStore } from '../server/store';
 import { researchBrand, approveBrand } from '../server/brand-workflow';
 import { runComparison } from '../server/workflow';
@@ -134,8 +134,8 @@ describe('brand-first sample flow', () => {
     analyst.research = vi.fn(analyst.research);
     const s = await setup(createQloo(), analyst);
     expect(s.created.statusCode).toBe(201);
-    expect(s.current().intake).toEqual(allbirdsIntake);
-    expect(s.current().brief.brand).toBe('Allbirds');
+    expect(s.current().intake).toEqual(sampleIntake);
+    expect(s.current().brief.brand).toBe('Topgolf');
     expect(s.current().candidates).toEqual([]);
     expect(s.current().planning.options).toEqual([]);
     expect(analyst.research).not.toHaveBeenCalled();
@@ -144,7 +144,7 @@ describe('brand-first sample flow', () => {
   it('requires research and explicit review before discovery, then assesses every identity and exports the strategy', async () => {
     const qloo = mockQloo(),
       s = await setup(qloo);
-    expect((await s.change('/research', { intake: allbirdsIntake })).statusCode).toBe(200);
+    expect((await s.change('/research', { intake: sampleIntake })).statusCode).toBe(200);
     expect(qloo.search).toHaveBeenCalledTimes(2);
     expect(qloo.insights).not.toHaveBeenCalled();
     expect((await s.change('/compare', { discover: true })).statusCode).toBe(422);
@@ -197,12 +197,12 @@ describe('brand-first sample flow', () => {
     analyst.research = async () => {
       throw new Error('Upstream failure containing private material');
     };
-    const failed = await s.change('/research', { intake: allbirdsIntake });
+    const failed = await s.change('/research', { intake: sampleIntake });
     expect(failed.statusCode).toBe(500);
     expect(failed.body).not.toContain('private material');
     expect((await s.store.get(s.current().id))?.version).toBe(1);
     analyst.research = mockAnalyst().research;
-    await s.change('/research', { intake: allbirdsIntake });
+    await s.change('/research', { intake: sampleIntake });
     await s.approve();
     analyst.assess = async () => {
       throw new Error('Failed assessment');
@@ -259,7 +259,7 @@ describe('brand-first sample flow', () => {
     };
     const s = await setup(mockQloo(), analyst),
       w = s.current();
-    const pending = s.change('/research', { intake: allbirdsIntake });
+    const pending = s.change('/research', { intake: sampleIntake });
     await started;
     await s.store.update(w.id, w.version, (c) => {
       c.brief.campaign = 'Concurrent edit';

@@ -10,6 +10,8 @@
   campaign. Newly discovered partners it omits are now left out and named in the run steps.
   Planner-chosen partners stay, and their missing coverage is still reported.
 - Deployed to Motif at partner-mix.slate-app.online and published the repository under MIT.
+- Replaced the Allbirds sample with a hypothetical Topgolf first-visit campaign, closer to live
+  entertainment and fan culture. Older saved samples stay labelled as hypothetical.
 
 ## 2026-10-30 — Partnership exploration
 

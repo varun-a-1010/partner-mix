@@ -128,4 +128,5 @@ context cannot rewrite the saved decision export.
 
 The full sample flow passed through `npm run test:qloo:sample` using the model chain in
 `server/models.ts`: sourced research, assessment, cultural ranking, locked-partner repair and
-authenticated export. `/api/health` reported both providers configured on the hosted server.
+authenticated export. It was repeated on the Topgolf sample, after its brief was corrected to cover
+all Chicago-area venues, because the agent rightly asked which venues the first version meant. `/api/health` reported both providers configured on the hosted server.

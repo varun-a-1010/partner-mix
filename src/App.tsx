@@ -67,7 +67,7 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   async function create(demo: boolean) {
-    setBusy(demo ? 'Opening the Allbirds campaign brief…' : 'Creating campaign…');
+    setBusy(demo ? 'Opening the Topgolf campaign brief…' : 'Creating campaign…');
     setError('');
     setNotice('');
     try {
@@ -206,7 +206,7 @@ export function App() {
                 Plan a campaign
               </button>
               <button className="text-button" disabled={!!busy} onClick={() => void create(true)}>
-                Explore an Allbirds campaign
+                Explore a Topgolf campaign
               </button>
             </div>
             {busy && <p role="status">{busy}</p>}
@@ -233,7 +233,7 @@ export function App() {
           </section>
           <section className="welcome-board" aria-label="Sample campaign taste references">
             <div className="board-top">
-              <span>Allbirds / hypothetical walking campaign</span>
+              <span>Topgolf / hypothetical first-visit campaign</span>
               <span>Qloo sample</span>
             </div>
             <h2>
@@ -303,7 +303,7 @@ export function App() {
             <Plus size={16} /> New campaign
           </button>
           <button className="sidebar-new" disabled={!!busy} onClick={() => void create(true)}>
-            <AudioLines size={16} /> Open Allbirds sample
+            <AudioLines size={16} /> Open Topgolf sample
           </button>
           <button
             className="sidebar-new"
@@ -332,14 +332,12 @@ export function App() {
         {w.demo && (
           <div className="sample-banner">
             <strong>
-              {w.sample?.scenario === 'allbirds-walking'
-                ? 'Allbirds / hypothetical campaign'
-                : 'Older sample'}
+              {w.sample?.scenario ? `${w.brief.brand} / hypothetical campaign` : 'Older sample'}
             </strong>
             <span>{sampleDescription(w)}</span>
-            {w.sample?.scenario !== 'allbirds-walking' && (
+            {!w.sample?.scenario && (
               <button disabled={!!busy} className="text-button" onClick={() => void create(true)}>
-                Open Allbirds sample
+                Open Topgolf sample
               </button>
             )}
             <button disabled={!!busy} className="text-button" onClick={() => void create(false)}>

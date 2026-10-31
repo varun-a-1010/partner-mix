@@ -27,7 +27,7 @@ contributing seed IDs actually returned by Qloo. Query IDs are local provenance
 identifiers, not vendor request IDs. Missing contributor metadata is labelled
 unavailable; no explanation is invented.
 
-The Allbirds sample starts from official website URLs and a hypothetical brief,
+The Topgolf sample starts from official website URLs and a hypothetical brief,
 not preset taste references. Gemini proposes references; Qloo resolves them, and the
 planner confirms the identities. Each approved direction contributes its first two
 artists and podcasts to a deduplicated sample shortlist of up to eight. Normal

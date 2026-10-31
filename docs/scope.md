@@ -12,7 +12,7 @@ not a promise that those partners are willing to participate.
 
 ## Implemented flow
 
-1. Create an empty campaign or open Allbirds with a hypothetical city-walking brief.
+1. Create an empty campaign or open Topgolf with a hypothetical first-visit brief.
    Creation does not call either provider or invent a shortlist.
 2. Supply a public brand website, a campaign brief, and optionally two supporting
    pages. Gemini URL Context reads those exact pages and returns sourced facts,
