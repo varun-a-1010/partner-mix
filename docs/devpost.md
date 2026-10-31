@@ -33,8 +33,8 @@ activation ideas. The app never treats that as reach, audience overlap or ROI, a
 - **Agentic workflow:** Gemini researches sourced pages and assesses fit. The orchestration and
   portfolio solver stay bounded and deterministic, so every recommendation can be explained.
 - **Qloo:** `/search` and `/v2/insights`, including comparison, demographics, taste tags and heatmaps.
-- **Reliability:** Gemini 4 Argon leads, and a chain of Flash models catches rate limits and invalid
-  output.
+- **Reliability:** Gemini 4 Argon leads. A second Vertex project and a chain of Flash models catch
+  rate limits and invalid output.
 - **Stack:** TypeScript, Fastify and React.
 
 ## Challenges
