@@ -114,7 +114,7 @@ not call an LLM or change existing workspaces. Mocked API tests separately exerc
 ownership, allowlisted candidates, version checks, private persistence and exports.
 
 Live examples completed: Allbirds × Bon Iver returned eight artist/podcast
-suggestions in six requests. Cedric × Omaha Steaks in Los Angeles returned twelve
+suggestions in six requests. A second pair in Los Angeles returned twelve
 artist/podcast/place suggestions and 1,141 joint geographic cells in eight requests.
 Both had explanation metadata and both reused cache entries without new requests.
 These checks establish that the implemented query paths return usable data, not
