@@ -34,7 +34,8 @@ URL Context tool reads the exact supplied URLs. It may use its indexed content;
 the retrieval timestamp is not a guarantee of a fresh origin crawl.
 
 The structured report separates website statements, campaign brief assumptions,
-hypotheses and unknowns. Website citations must be to a supplied URL that the
+hypotheses and unknowns. Claims whose citation fails are corrected or dropped rather than
+failing the run. Website citations must be to a supplied URL that the
 provider marked successfully retrieved; a profile with no successful source is
 rejected. This verifies source availability, not each statement's factual truth.
 The planner must review the text. An inaccessible page produces an actionable

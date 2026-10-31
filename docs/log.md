@@ -12,6 +12,14 @@
 - Deployed to Motif at partner-mix.slate-app.online and published the repository under MIT.
 - Replaced the Allbirds sample with a hypothetical Topgolf first-visit campaign, closer to live
   entertainment and fan culture. Older saved samples stay labelled as hypothetical.
+- Stopped one mislabelled citation from failing a whole brand analysis, which hit the Topgolf sample
+  about one run in three. A website claim citing the brief is now labelled as the brief, a claim
+  citing an unread page is dropped and counted, and the analysis only fails if no sourced claim is
+  left.
+- Replaced the leftover sample panel with six clickable sample cards across sports, drinks, toys,
+  fitness, travel and restaurants. Each was run twice against its real site. Duolingo was dropped
+  because its home page cannot be read.
+- New campaigns now default to USD 50,000.
 - Added a second Vertex project. A failed call now tries the same model there before the chain
   moves to the next model, so a quota limit on one project keeps Argon in use. Website research was
   confirmed working on the backup with the primary forced to fail.

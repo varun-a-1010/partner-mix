@@ -190,7 +190,7 @@ export function BriefEditor({ w, mutate }: { w: WorkspaceView; mutate: Mutate })
             disabled={!!w.selection || w.candidates.some((c) => c.offer.amount !== null)}
             onChange={(e) => set('currency', e.target.value as Brief['currency'])}
           >
-            {['INR', 'USD', 'GBP', 'EUR'].map((c) => (
+            {['USD', 'EUR', 'GBP', 'INR'].map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>

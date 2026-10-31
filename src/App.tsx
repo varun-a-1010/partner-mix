@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AudioLines, Layers3, ListChecks, FileText, NotebookPen, Plus, X } from 'lucide-react';
 import type { WorkspaceView } from '../shared/model';
 import { money, sampleDescription } from '../shared/model';
+import { SAMPLE_CAMPAIGNS } from '../shared/samples';
 import { api, ApiError } from './api';
 import { BriefEditor, Roster } from './forms';
 import { ComparisonBoard, Decision } from './views';
@@ -66,12 +67,12 @@ export function App() {
     // Initial navigation is read-only. Each campaign is scoped to an HttpOnly cookie.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  async function create(demo: boolean) {
-    setBusy(demo ? 'Opening the Topgolf campaign brief…' : 'Creating campaign…');
+  async function create(sample?: string) {
+    setBusy(sample ? 'Opening the sample campaign…' : 'Creating campaign…');
     setError('');
     setNotice('');
     try {
-      remember(await api<WorkspaceView>('/workspaces', { demo }));
+      remember(await api<WorkspaceView>('/workspaces', { demo: !!sample, sample }));
       setTab('brand');
       setEditId(null);
     } catch (e) {
@@ -198,15 +199,8 @@ export function App() {
               proposal, from brand understanding to the people worth approaching.
             </p>
             <div className="welcome-actions">
-              <button
-                className="primary large"
-                disabled={!!busy}
-                onClick={() => void create(false)}
-              >
+              <button className="primary large" disabled={!!busy} onClick={() => void create()}>
                 Plan a campaign
-              </button>
-              <button className="text-button" disabled={!!busy} onClick={() => void create(true)}>
-                Explore a Topgolf campaign
               </button>
             </div>
             {busy && <p role="status">{busy}</p>}
@@ -231,38 +225,24 @@ export function App() {
               with illustrative commercial inputs.
             </p>
           </section>
-          <section className="welcome-board" aria-label="Sample campaign taste references">
-            <div className="board-top">
-              <span>Topgolf / hypothetical first-visit campaign</span>
-              <span>Qloo sample</span>
+          <section className="sample-panel" aria-labelledby="sample-heading">
+            <h2 id="sample-heading">Or open a sample</h2>
+            <p>Real brands, hypothetical campaigns. Each opens with its brief ready to run.</p>
+            <div className="sample-grid">
+              {SAMPLE_CAMPAIGNS.map((sample) => (
+                <button
+                  key={sample.id}
+                  className="sample-card"
+                  disabled={!!busy}
+                  onClick={() => void create(sample.id)}
+                >
+                  <small>{sample.category}</small>
+                  <strong>{sample.brand}</strong>
+                  <span>{sample.pitch}</span>
+                  <em>{money(sample.budget, 'USD')} pilot</em>
+                </button>
+              ))}
             </div>
-            <h2>
-              Understand the brand.
-              <br />
-              Then make the case.
-            </h2>
-            <div className="record-shape">
-              <div />
-              <div />
-              <span>
-                Walk. Notice.
-                <br />A campaign with a purpose.
-              </span>
-            </div>
-            <div className="example-slot">
-              <span className="example-type">Brand context</span>
-              <strong>Everyday shoes, alternative materials</strong>
-              <span>Products, materials and understated design</span>
-            </div>
-            <div className="example-slot music">
-              <span className="example-type">Campaign question</span>
-              <strong>Who can tell a city-walking story?</strong>
-              <span>Reach commuters and design-conscious shoppers</span>
-            </div>
-            <p>
-              Research the real brand, review the strategy, then investigate partners. This campaign
-              is an independent hypothetical exercise.
-            </p>
           </section>
         </main>
       </div>
@@ -299,11 +279,8 @@ export function App() {
             {w.provider === 'configured' ? 'Qloo configured' : 'Qloo not connected'}
           </span>
           <p>Private campaign workspace. Analysis uses Gemini; cultural discovery uses Qloo.</p>
-          <button className="sidebar-new" disabled={!!busy} onClick={() => void create(false)}>
+          <button className="sidebar-new" disabled={!!busy} onClick={() => void create()}>
             <Plus size={16} /> New campaign
-          </button>
-          <button className="sidebar-new" disabled={!!busy} onClick={() => void create(true)}>
-            <AudioLines size={16} /> Open Topgolf sample
           </button>
           <button
             className="sidebar-new"
@@ -336,11 +313,15 @@ export function App() {
             </strong>
             <span>{sampleDescription(w)}</span>
             {!w.sample?.scenario && (
-              <button disabled={!!busy} className="text-button" onClick={() => void create(true)}>
-                Open Topgolf sample
+              <button
+                disabled={!!busy}
+                className="text-button"
+                onClick={() => void create(SAMPLE_CAMPAIGNS[0]!.id)}
+              >
+                Open a new sample
               </button>
             )}
-            <button disabled={!!busy} className="text-button" onClick={() => void create(false)}>
+            <button disabled={!!busy} className="text-button" onClick={() => void create()}>
               Start your own
             </button>
           </div>

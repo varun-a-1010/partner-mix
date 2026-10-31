@@ -68,6 +68,20 @@ const normalize = (url: string) => {
     return '';
   }
 };
+/**
+ * One mislabelled citation should cost that claim, not the whole analysis. A website claim with no
+ * page that was actually read is never kept, and one that cited the brief is labelled as the brief.
+ */
+function cleanFacts(facts: BrandAnalysis['facts'], read: Set<string>) {
+  return facts.flatMap((fact): BrandAnalysis['facts'] => {
+    const pages = fact.sources.filter((s) => read.has(normalize(s)));
+    const brief = fact.sources.includes('campaign brief') ? ['campaign brief'] : [];
+    if (fact.basis === 'unknown') return [{ ...fact, sources: [] }];
+    if (fact.basis !== 'website') return [{ ...fact, sources: [...brief, ...pages] }];
+    if (pages.length) return [{ ...fact, sources: pages }];
+    return brief.length ? [{ ...fact, basis: 'campaign brief', sources: brief }] : [];
+  });
+}
 // Vertex rejected the full nested bounded assessment schema with INVALID_ARGUMENT.
 // Keep its generated shape simple; enforce every bound with Zod after generation.
 function generationSchema(value: unknown): unknown {
@@ -197,7 +211,7 @@ export function createBrandAnalyst(
     async research(input) {
       const urls = [...new Set([input.website, ...input.supportingUrls].map(publicWebsite))];
       const { data, response, model } = await call(
-        analysisSchema,
+        analysisSchema.refine((a) => new Set(a.directions.map((d) => d.id)).size === 2),
         `Read these exact public brand pages using URL context: ${JSON.stringify(urls)}.
 Campaign brief supplied by the planner (not a statement of an actual brand campaign):
 ${JSON.stringify(input.campaignBrief)}
@@ -232,41 +246,27 @@ Do not claim you read a page that returned an access/queue/error screen.`,
           'The brand pages could not be read. Add a public About or product page and try again.',
         );
       const read = new Set(sources.map((s) => normalize(s.url)));
-      for (const fact of data.facts) {
-        if (
-          fact.basis === 'website' &&
-          (!fact.sources.length || fact.sources.some((s) => !read.has(normalize(s))))
-        )
-          throw new AppError(
-            502,
-            'The brand analysis contained an unsupported website citation. Please try again.',
-          );
-        if (
-          fact.basis !== 'website' &&
-          fact.sources.some((s) => s !== 'campaign brief' && !read.has(normalize(s)))
-        )
-          throw new AppError(
-            502,
-            'The brand analysis contained an unsupported source. Please try again.',
-          );
-        if (fact.basis === 'unknown' && fact.sources.length)
-          throw new AppError(
-            502,
-            'The brand analysis gave an unknown claim a source. Please try again.',
-          );
-      }
-      if (new Set(data.directions.map((d) => d.id)).size !== 2)
+      const facts = cleanFacts(data.facts, read);
+      if (!facts.some((f) => f.basis === 'website'))
         throw new AppError(
-          502,
-          'The brand analysis did not produce two distinct directions. Try again.',
+          422,
+          'The brand pages could not be read. Add a public About or product page and try again.',
         );
+      const dropped = data.facts.length - facts.length;
       return {
-        analysis: data,
+        analysis: { ...data, facts },
         model,
         sources,
-        warnings: urls
-          .filter((u) => !read.has(normalize(u)))
-          .map((u) => `Could not verify retrieval of ${u}. No facts from that page are accepted.`),
+        warnings: [
+          ...urls
+            .filter((u) => !read.has(normalize(u)))
+            .map(
+              (u) => `Could not verify retrieval of ${u}. No facts from that page are accepted.`,
+            ),
+          ...(dropped
+            ? [`Left out ${dropped} claim${dropped === 1 ? '' : 's'} with no page to support it.`]
+            : []),
+        ],
       };
     },
     async assess(research, candidates, evidence, intake, partnerships) {

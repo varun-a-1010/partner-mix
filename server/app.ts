@@ -102,9 +102,11 @@ export async function buildApp(
     '/api/workspaces',
     { config: { rateLimit: { max: 12, timeWindow: '1 hour' } } },
     async (r, reply) => {
-      const { demo } = z.object({ demo: z.boolean().default(false) }).parse(r.body);
+      const { demo, sample } = z
+        .object({ demo: z.boolean().default(false), sample: z.string().max(60).optional() })
+        .parse(r.body);
       const { workspace, secret } = newWorkspace(demo);
-      if (demo) prepareSample(workspace);
+      if (demo) prepareSample(workspace, sample);
       await store.create(workspace);
       reply.setCookie(cookieName(workspace.id), secret, {
         httpOnly: true,

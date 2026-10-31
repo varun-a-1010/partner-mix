@@ -6,6 +6,8 @@ import { newWorkspace } from '../server/data';
 // Historical fixture only. Never exposed by new sample creation.
 export function legacyWorkspace() {
   const result = newWorkspace(true);
+  result.workspace.brief.currency = 'INR';
+  result.workspace.brief.budget = 500_000;
   seedDemo(result.workspace);
   return result;
 }

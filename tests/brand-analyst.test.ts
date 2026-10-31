@@ -42,17 +42,46 @@ describe('grounded brand analysis', () => {
       generate: async () => response(analysisFixture(), false),
     });
     await expect(analyst.research(fixtureIntake)).rejects.toThrow('could not be read');
-    for (const citation of ['https://invented.example.org/', 'not a URL', 'campaign brief']) {
+  });
+  const analyzed = (data: ReturnType<typeof analysisFixture>) =>
+    createBrandAnalyst({ sleep: async () => {}, generate: async () => response(data) }).research(
+      fixtureIntake,
+    );
+  it('drops a claim citing a page it never read and keeps the rest', async () => {
+    for (const citation of ['https://invented.example.org/', 'not a URL']) {
       const data = analysisFixture();
-      data.facts[0].sources = [citation];
-      const unsupported = createBrandAnalyst({
-        sleep: async () => {},
-        generate: async () => response(data),
-      });
-      await expect(unsupported.research(fixtureIntake)).rejects.toThrow(
-        'unsupported website citation',
-      );
+      data.facts.push({ ...data.facts[0]!, statement: 'Invented claim.', sources: [citation] });
+      const { analysis, warnings } = await analyzed(data);
+      expect(analysis.facts.map((f) => f.statement)).not.toContain('Invented claim.');
+      expect(analysis.facts).toHaveLength(data.facts.length - 1);
+      expect(warnings.join(' ')).toContain('Left out 1 claim');
     }
+  });
+  it('relabels a website claim that actually cites the brief', async () => {
+    const data = analysisFixture();
+    data.facts.push({ ...data.facts[0]!, statement: 'Brief.', sources: ['campaign brief'] });
+    const { analysis } = await analyzed(data);
+    expect(analysis.facts.find((f) => f.statement === 'Brief.')).toMatchObject({
+      basis: 'campaign brief',
+      sources: ['campaign brief'],
+    });
+  });
+  it('removes a source from a claim marked unknown', async () => {
+    const data = analysisFixture();
+    data.facts.push({
+      ...data.facts[0]!,
+      statement: 'Unknown.',
+      basis: 'unknown',
+      sources: ['https://invented.example.org/'],
+    });
+    const { analysis } = await analyzed(data);
+    expect(analysis.facts.find((f) => f.statement === 'Unknown.')?.sources).toEqual([]);
+  });
+  it('refuses when no claim is left with a page behind it', async () => {
+    const data = analysisFixture();
+    for (const fact of data.facts)
+      if (fact.basis === 'website') fact.sources = ['https://invented.example.org/'];
+    await expect(analyzed(data)).rejects.toThrow('could not be read');
   });
   it('rejects local URLs and does not expose upstream exceptions', async () => {
     for (const url of [

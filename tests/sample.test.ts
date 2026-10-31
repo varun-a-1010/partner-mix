@@ -6,7 +6,9 @@ import { join } from 'node:path';
 import { buildApp } from '../server/app';
 import { newWorkspace } from '../server/data';
 import { createQloo, type Qloo } from '../server/qloo';
-import { sampleIntake } from '../server/sample';
+import { prepareSample, sampleIntake } from '../server/sample';
+import { intakeSchema } from '../shared/brand';
+import { SAMPLE_CAMPAIGNS } from '../shared/samples';
 import { FileStore } from '../server/store';
 import { researchBrand, approveBrand } from '../server/brand-workflow';
 import { runComparison } from '../server/workflow';
@@ -275,5 +277,32 @@ describe('brand-first sample flow', () => {
       w = await researchBrand(newWorkspace().workspace, fixtureIntake, mockAnalyst(), qloo);
     await expect(runComparison(w, qloo, true)).rejects.toThrow('approve');
     expect(qloo.insights).not.toHaveBeenCalled();
+  });
+});
+
+describe('sample campaigns', () => {
+  it('opens each sample with its own brief in USD', () => {
+    for (const sample of SAMPLE_CAMPAIGNS) {
+      const { workspace } = newWorkspace(true);
+      prepareSample(workspace, sample.id);
+      expect(workspace.brief.brand).toBe(sample.brand);
+      expect(workspace.brief.currency).toBe('USD');
+      expect(workspace.intake?.campaignBrief).toContain('hypothetical');
+      expect(workspace.sample?.scenario).toBe(sample.id);
+    }
+  });
+
+  it('keeps every sample valid and clearly hypothetical', () => {
+    expect(new Set(SAMPLE_CAMPAIGNS.map((s) => s.id)).size).toBe(SAMPLE_CAMPAIGNS.length);
+    for (const sample of SAMPLE_CAMPAIGNS) {
+      expect(sample.intake.campaignBrief).toContain('not an actual campaign or endorsement');
+      expect(() => intakeSchema.parse(sample.intake)).not.toThrow();
+    }
+  });
+
+  it('falls back to the first sample for an unknown id', () => {
+    const { workspace } = newWorkspace(true);
+    prepareSample(workspace, 'nothing');
+    expect(workspace.brief.brand).toBe(SAMPLE_CAMPAIGNS[0]!.brand);
   });
 });

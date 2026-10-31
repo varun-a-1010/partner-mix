@@ -123,7 +123,7 @@ describe('private campaign API', () => {
       method: 'PATCH',
       url: `/api/w/${w.id}/brief`,
       headers,
-      payload: { version: w.version, brief: { ...w.brief, currency: 'USD' } },
+      payload: { version: w.version, brief: { ...w.brief, currency: 'EUR' } },
     });
     expect(r.statusCode).toBe(422);
   });

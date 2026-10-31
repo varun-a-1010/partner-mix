@@ -120,7 +120,7 @@ export type Workspace = {
   sample?: {
     source: 'qloo';
     generatedAt: string;
-    scenario?: 'allbirds-walking' | 'topgolf-first-swing';
+    scenario?: string;
   };
   intake?: BrandIntake;
   research?: BrandResearch;

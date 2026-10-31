@@ -20,14 +20,13 @@ The launcher fetches Vertex settings and `QLOO_API_KEY` into child-process memor
 writes them. Without it, set `VERTEX_LLM_PROJECT_ID`, `VERTEX_LLM_SERVICE_ACCOUNT` and
 `QLOO_API_KEY` yourself. No credentials are bundled into the client.
 
-Open [Partner Mix](http://127.0.0.1:5193). The API uses port 3193. Choose **Open
-Topgolf sample** in an existing campaign, or **Explore a Topgolf campaign**
-on the home screen. Sample creation is offline; research and discovery happen
+Open [Partner Mix](http://127.0.0.1:5193). The API uses port 3193. Pick a sample card
+on the home screen: Topgolf, Liquid Death, LEGO, Peloton, Airbnb or Chipotle. Sample creation is offline; research and discovery happen
 only when requested. Both provider connections are needed for the full flow.
 
 ## Try the full flow
 
-1. Open the Topgolf sample: a real brand with a hypothetical US first-visit campaign.
+1. Open a sample: a real brand with an independent, hypothetical US campaign.
 2. Click **Understand this brand**. Gemini reads the supplied official pages and
    analyzes the brief. Review facts, sources, hypotheses, unknowns and questions.
 3. Correct the understanding if needed. Confirm Qloo identities for the proposed
