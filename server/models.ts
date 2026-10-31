@@ -1,4 +1,11 @@
-import { ThinkingLevel } from '@google/genai';
+import {
+  ThinkingLevel,
+  type GenerateContentParameters,
+  type GenerateContentResponse,
+} from '@google/genai';
+
+export type Generate = (request: GenerateContentParameters) => Promise<GenerateContentResponse>;
+export type VertexAccount = { project?: string; serviceAccount?: string };
 
 /** Brand judgment leads with Argon. The Flash models catch its failures and rate limits. */
 export const MODEL_CHAIN = [
@@ -51,3 +58,21 @@ export async function withFallback<T>(
   }
   throw lastError;
 }
+
+const statusOf = (error: unknown) => (error as { status?: number }).status ?? 'unknown';
+
+/**
+ * Each project has its own quota, so a failed call tries the same model on the backup before the
+ * model chain moves on. A call that already timed out has no time left to try again.
+ */
+export const withBackup =
+  (primary: Generate, backup: Generate): Generate =>
+  async (request) => {
+    try {
+      return await primary(request);
+    } catch (error) {
+      if (request.config?.abortSignal?.aborted) throw error;
+      console.warn('Primary Vertex project failed, trying the backup.', statusOf(error));
+      return backup(request);
+    }
+  };

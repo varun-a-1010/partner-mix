@@ -1,9 +1,5 @@
 import { pairSummary, type PairReport } from '../shared/partnership';
-import {
-  GoogleGenAI,
-  type GenerateContentParameters,
-  type GenerateContentResponse,
-} from '@google/genai';
+import { GoogleGenAI, type GenerateContentResponse } from '@google/genai';
 import { z } from 'zod';
 import ipaddr from 'ipaddr.js';
 import {
@@ -15,7 +11,14 @@ import {
   type PartnerAssessment,
 } from '../shared/brand';
 import type { Candidate, Evidence } from '../shared/model';
-import { MODEL_CHAIN, thinkingFor, withFallback } from './models';
+import {
+  MODEL_CHAIN,
+  thinkingFor,
+  withBackup,
+  withFallback,
+  type Generate,
+  type VertexAccount,
+} from './models';
 import { AppError } from './store';
 
 export interface BrandAnalyst {
@@ -90,35 +93,45 @@ export function createBrandAnalyst(
     project?: string;
     serviceAccount?: string;
     location?: string;
+    backup?: VertexAccount;
     model?: string;
-    generate?: (request: GenerateContentParameters) => Promise<GenerateContentResponse>;
+    generate?: Generate;
     diagnostic?: (event: AnalystDiagnostic) => void;
     sleep?: (ms: number) => Promise<void>;
   } = {},
 ): BrandAnalyst {
   const chain = options.model ? [options.model, ...MODEL_CHAIN] : MODEL_CHAIN;
-  let client: GoogleGenAI | undefined;
+  const connect = (project: string, serviceAccount: string): Generate => {
+    const raw = serviceAccount.trim();
+    const credentials = JSON.parse(
+      raw.startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8'),
+    );
+    if (!credentials.client_email || !credentials.private_key) throw new Error('Missing fields');
+    const client = new GoogleGenAI({
+      vertexai: true,
+      project,
+      location: options.location || 'global',
+      googleAuthOptions: { credentials },
+      httpOptions: { apiVersion: 'v1', timeout: 90_000, retryOptions: { attempts: 1 } },
+    });
+    return (r) => client.models.generateContent(r);
+  };
+  let vertex: Generate | undefined;
   if (options.project && options.serviceAccount) {
     try {
-      const raw = options.serviceAccount.trim();
-      const credentials = JSON.parse(
-        raw.startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8'),
-      );
-      if (!credentials.client_email || !credentials.private_key) throw new Error('Missing fields');
-      client = new GoogleGenAI({
-        vertexai: true,
-        project: options.project,
-        location: options.location || 'global',
-        googleAuthOptions: { credentials },
-        httpOptions: { apiVersion: 'v1', timeout: 90_000, retryOptions: { attempts: 1 } },
-      });
+      vertex = connect(options.project, options.serviceAccount);
     } catch {
       throw new Error('Vertex credentials could not be loaded. Check the server configuration.');
     }
+    if (options.backup?.project && options.backup.serviceAccount) {
+      try {
+        vertex = withBackup(vertex, connect(options.backup.project, options.backup.serviceAccount));
+      } catch {
+        console.warn('The backup Vertex credential could not be read, so it is not in use.');
+      }
+    }
   }
-  const generate =
-    options.generate ??
-    (client ? (r: GenerateContentParameters) => client!.models.generateContent(r) : undefined);
+  const generate = options.generate ?? vertex;
   async function call<T extends z.ZodType>(schema: T, prompt: string, urls = false) {
     if (!generate)
       throw new AppError(

@@ -11,6 +11,10 @@ const app = await buildApp(new FileStore(resolve(process.env.DATA_DIR ?? '.data'
     project: process.env.VERTEX_LLM_PROJECT_ID,
     serviceAccount: process.env.VERTEX_LLM_SERVICE_ACCOUNT,
     location: process.env.VERTEX_LLM_REGION,
+    backup: {
+      project: process.env.VERTEX_LLM_BACKUP_PROJECT_ID,
+      serviceAccount: process.env.VERTEX_LLM_BACKUP_SERVICE_ACCOUNT,
+    },
     model: process.env.BRAND_MODEL,
   }),
   origin: process.env.APP_ORIGIN,

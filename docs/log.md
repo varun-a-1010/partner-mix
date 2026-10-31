@@ -12,6 +12,9 @@
 - Deployed to Motif at partner-mix.slate-app.online and published the repository under MIT.
 - Replaced the Allbirds sample with a hypothetical Topgolf first-visit campaign, closer to live
   entertainment and fan culture. Older saved samples stay labelled as hypothetical.
+- Added a second Vertex project. A failed call now tries the same model there before the chain
+  moves to the next model, so a quota limit on one project keeps Argon in use. Website research was
+  confirmed working on the backup with the primary forced to fail.
 
 ## 2026-10-30 — Partnership exploration
 

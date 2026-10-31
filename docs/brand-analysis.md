@@ -14,7 +14,9 @@ shape schema; full length/count constraints remain enforced by Zod after generat
 The nested bounded assessment schema was rejected with HTTP 400; simplifying the
 provider schema succeeded without weakening the application validator. Configuration is
 `VERTEX_LLM_PROJECT_ID`, base64 or JSON `VERTEX_LLM_SERVICE_ACCOUNT`,
-`VERTEX_LLM_REGION` (default global), and optional `BRAND_MODEL`.
+`VERTEX_LLM_REGION` (default global), and optional `BRAND_MODEL`. Optional
+`VERTEX_LLM_BACKUP_PROJECT_ID` and `VERTEX_LLM_BACKUP_SERVICE_ACCOUNT` add a second project, which a
+failed call tries with the same model before the chain moves on.
 
 Varun explicitly authorized local reuse of Slate's working default project.
 `scripts/with-slate-vertex.mjs` reads only those three Doppler secrets from
